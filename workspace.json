@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "projects": {
+    "auth-service": "apps/auth-service",
+    "frontend": "apps/frontend",
+    "frontend-e2e": "apps/frontend-e2e",
+    "frontend2": "apps/frontend2",
+    "my-nest-lib": "libs/my-nest-lib",
+    "snppd-service": "apps/snppd-service",
+    "user-service": "apps/user-service"
+  }
+}
