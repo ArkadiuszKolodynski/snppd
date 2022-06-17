@@ -1,22 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { suite } from 'uvu';
+import { equal } from 'uvu/assert';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-describe('AppController', () => {
-  let app: TestingModule;
+const AppControllerSuite = suite<{ controller: AppController }>('AppControllerSuite');
 
-  beforeAll(async () => {
-    app = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-  });
+AppControllerSuite.before(async (context) => {
+  const app = await Test.createTestingModule({
+    controllers: [AppController],
+    providers: [AppService],
+  }).compile();
 
-  describe('getData', () => {
-    it('should return "Welcome to user-service!"', () => {
-      const appController = app.get<AppController>(AppController);
-      expect(appController.getData()).toEqual({ message: 'Welcome to user-service!' });
-    });
-  });
+  context.controller = app.get<AppController>(AppController);
 });
+
+AppControllerSuite('should return "Welcome to user-service!"', ({ controller }) => {
+  equal(controller.getData().message, 'Welcome to user-service!');
+});
+AppControllerSuite.run();

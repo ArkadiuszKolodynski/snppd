@@ -1,0 +1,28 @@
+version: 2.1
+orbs:
+  node: circleci/node@5.0.2
+jobs:
+  build:
+    docker:
+     - image: cimg/node:18.4.0
+    resource_class: small
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          command: npx nx run-many --target=build --all
+  test:
+    docker:
+     - image: cimg/node:18.4.0
+    resource_class: small
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          command: npx nx run-many --target=test --all
+
+workflows:
+  build_and_tes:
+    jobs:
+      - build
+      - test

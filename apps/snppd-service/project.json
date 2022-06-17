@@ -1,5 +1,5 @@
 {
-  "$schema": "..\\..\\node_modules\\nx\\schemas\\project-schema.json",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/snppd-service/src",
   "projectType": "application",
   "targets": {
@@ -40,11 +40,11 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/snppd-service"],
+      "executor": "nx-uvu:uvu",
       "options": {
-        "jestConfig": "apps/snppd-service/jest.config.ts",
-        "passWithNoTests": true
+        "rootDir": "apps/snppd-service/src",
+        "coverage": true,
+        "typescript": true
       }
     }
   },
