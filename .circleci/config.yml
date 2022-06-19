@@ -2,27 +2,55 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.2
 jobs:
+  checkout_and_install:
+    docker:
+      - image: cimg/node:18.4.0
+    resource_class: small
+    steps:
+      - checkout
+      - node/install-packages
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./*
   build:
     docker:
       - image: cimg/node:18.4.0
     resource_class: small
     steps:
-      - checkout
-      - node/install-packages
+      - attach_workspace:
+          at: ./
       - run:
-          command: npx nx run-many --target=build --all
+          command: npm run build:all
   test:
     docker:
       - image: cimg/node:18.4.0
     resource_class: small
     steps:
-      - checkout
-      - node/install-packages
+      - attach_workspace:
+          at: ./
       - run:
-          command: npx nx run-many --target=test --all
+          command: npm run test:all
+  lint:
+    docker:
+      - image: cimg/node:18.4.0
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          command: npm run lint:all
 
 workflows:
-  build_and_tes:
+  build_and_test:
     jobs:
-      - build
-      - test
+      - checkout_and_install
+      - build:
+          requires:
+            - checkout_and_install
+      - test:
+          requires:
+            - checkout_and_install
+      - lint:
+          requires:
+            - checkout_and_install
