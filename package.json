@@ -4,8 +4,14 @@
   "license": "MIT",
   "scripts": {
     "start": "nx serve",
+    "start:all": "nx run-many --target=serve --all",
     "build": "nx build",
-    "test": "nx test"
+    "build:all": "nx run-many --target=build --all",
+    "lint": "nx lint",
+    "lint:all": "nx run-many --target=lint --all",
+    "test": "nx test",
+    "test:all": "nx run-many --target=test --all",
+    "prepare": "husky install"
   },
   "private": true,
   "dependencies": {
@@ -39,8 +45,8 @@
     "@nxext/svelte": "^14.0.0",
     "@nxext/sveltekit": "^14.0.0-next.2",
     "@nxext/vite": "^14.0.0",
-    "@sveltejs/adapter-node": "next",
-    "@sveltejs/kit": "next",
+    "@sveltejs/adapter-node": "^1.0.0-next.78",
+    "@sveltejs/kit": "^1.0.0-next.350",
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.49",
     "@testing-library/svelte": "^3.1.3",
     "@tsconfig/svelte": "^3.0.0",
@@ -55,8 +61,10 @@
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-svelte3": "^4.0.0",
+    "husky": "^8.0.0",
     "jest": "28.1.1",
     "jest-environment-jsdom": "^28.1.1",
+    "lint-staged": "^13.0.2",
     "nx-uvu": "^1.2.0",
     "prettier": "2.7.1",
     "svelte": "^3.48.0",
@@ -65,6 +73,20 @@
     "svelte-preprocess": "^4.10.7",
     "ts-jest": "28.0.5",
     "ts-node": "10.8.1",
-    "typescript": "4.7.3"
+    "typescript": "^4.7.4"
+  },
+  "lint-staged": {
+    "*": [
+      "npx eslint . --fix",
+      "git add ."
+    ]
+  },
+  "//TODO": {
+    "replace_lint_staged_commands_with": "nx affected --target=lint --uncommitted --parallel --fix=true",
+    "after_those_are_resolved": [
+      "https://github.com/nrwl/nx/issues/10806",
+      "https://github.com/nrwl/nx/issues/10768"
+    ],
+    "also_change_ignore_pattern_in_eslintrc_to": "[**/*]"
   }
 }
