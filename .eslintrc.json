@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["**/node_modules/**", "**/dist/**", ".eslintrc", "**/*.json", "**/*.md"],
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", ".eslintrc", "**/*.json", "**/*.md", ".husky/**"],
   "plugins": ["@nrwl/nx"],
   "overrides": [
     {
