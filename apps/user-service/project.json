@@ -10,7 +10,8 @@
         "outputPath": "dist/apps/user-service",
         "main": "apps/user-service/src/main.ts",
         "tsConfig": "apps/user-service/tsconfig.app.json",
-        "assets": ["apps/user-service/src/assets"]
+        "assets": ["apps/user-service/src/assets"],
+        "generatePackageJson": true
       },
       "configurations": {
         "production": {
