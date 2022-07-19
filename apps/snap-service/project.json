@@ -1,16 +1,16 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/snppd-service/src",
+  "sourceRoot": "apps/snap-service/src",
   "projectType": "application",
   "targets": {
     "build": {
       "executor": "@nrwl/node:webpack",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/snppd-service",
-        "main": "apps/snppd-service/src/main.ts",
-        "tsConfig": "apps/snppd-service/tsconfig.app.json",
-        "assets": ["apps/snppd-service/src/assets"],
+        "outputPath": "dist/apps/snap-service",
+        "main": "apps/snap-service/src/main.ts",
+        "tsConfig": "apps/snap-service/tsconfig.app.json",
+        "assets": ["apps/snap-service/src/assets"],
         "generatePackageJson": true
       },
       "configurations": {
@@ -20,8 +20,8 @@
           "inspect": false,
           "fileReplacements": [
             {
-              "replace": "apps/snppd-service/src/environments/environment.ts",
-              "with": "apps/snppd-service/src/environments/environment.prod.ts"
+              "replace": "apps/snap-service/src/environments/environment.ts",
+              "with": "apps/snap-service/src/environments/environment.prod.ts"
             }
           ]
         }
@@ -30,20 +30,20 @@
     "serve": {
       "executor": "@nrwl/node:node",
       "options": {
-        "buildTarget": "snppd-service:build"
+        "buildTarget": "snap-service:build"
       }
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/snppd-service/**/*.ts"]
+        "lintFilePatterns": ["apps/snap-service/**/*.ts"]
       }
     },
     "test": {
       "executor": "nx-uvu:uvu",
       "options": {
-        "rootDir": "apps/snppd-service/src",
+        "rootDir": "apps/snap-service/src",
         "coverage": true,
         "typescript": true
       }

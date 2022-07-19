@@ -4,7 +4,7 @@
     "auth-service": "apps/auth-service",
     "frontend": "apps/frontend",
     "frontend-e2e": "apps/frontend-e2e",
-    "snppd-service": "apps/snppd-service",
+    "snap-service": "apps/snap-service",
     "user-service": "apps/user-service"
   }
 }
