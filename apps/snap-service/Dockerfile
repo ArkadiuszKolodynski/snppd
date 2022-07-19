@@ -6,11 +6,11 @@ FROM node:18-alpine As development
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node ../../dist/apps/snppd-service/package*.json ./
+COPY --chown=node:node ../../dist/apps/snap-service/package*.json ./
 
 RUN npm install
 
-COPY --chown=node:node ../../dist/apps/snppd-service .
+COPY --chown=node:node ../../dist/apps/snap-service .
 
 USER node
 
@@ -23,7 +23,7 @@ FROM node:18-alpine As build
 WORKDIR /usr/src/app
 
 COPY --chown=user:node --from=development /usr/src/app/package-lock.json .
-COPY --chown=node:node ../../dist/apps/snppd-service .
+COPY --chown=node:node ../../dist/apps/snap-service .
 
 ENV NODE_ENV production
 
