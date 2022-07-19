@@ -10,7 +10,8 @@
         "outputPath": "dist/apps/snppd-service",
         "main": "apps/snppd-service/src/main.ts",
         "tsConfig": "apps/snppd-service/tsconfig.app.json",
-        "assets": ["apps/snppd-service/src/assets"]
+        "assets": ["apps/snppd-service/src/assets"],
+        "generatePackageJson": true
       },
       "configurations": {
         "production": {
