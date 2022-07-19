@@ -4,7 +4,6 @@
     "auth-service": "apps/auth-service",
     "frontend": "apps/frontend",
     "frontend-e2e": "apps/frontend-e2e",
-    "my-nest-lib": "libs/my-nest-lib",
     "snppd-service": "apps/snppd-service",
     "user-service": "apps/user-service"
   }
