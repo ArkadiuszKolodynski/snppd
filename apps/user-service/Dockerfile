@@ -1,8 +1,8 @@
-###################
-# BUILD FOR LOCAL DEVELOPMENT
-###################
+###############################
+# BUILD FOR LOCAL DEVELOPMENT #
+###############################
 
-FROM node:18-alpine As development
+FROM node:18-alpine AS development
 
 WORKDIR /usr/src/app
 
@@ -14,11 +14,11 @@ COPY --chown=node:node ../../dist/apps/user-service .
 
 USER node
 
-###################
-# BUILD FOR PRODUCTION
-###################
+########################
+# BUILD FOR PRODUCTION #
+########################
 
-FROM node:18-alpine As build
+FROM node:18-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -31,11 +31,11 @@ RUN npm ci --only=production && npm cache clean --force
 
 USER node
 
-###################
-# PRODUCTION
-###################
+##############
+# PRODUCTION #
+##############
 
-FROM node:18-alpine As production
+FROM node:18-alpine AS production
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app .
