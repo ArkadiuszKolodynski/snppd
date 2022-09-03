@@ -12,6 +12,8 @@ datasource db {
 
 model Snap {
   id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  url         String
   title       String
   htmlContent String?
   textContent String?

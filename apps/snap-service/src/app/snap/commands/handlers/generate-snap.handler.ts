@@ -6,9 +6,9 @@ import { GenerateSnapCommand } from '../impl/generate-snap.command';
 
 @CommandHandler(GenerateSnapCommand)
 export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand> {
-  constructor(@InjectQueue(SNAP_QUEUE_NAME) private readonly snapQueue: Queue<{ url: string }>) {}
+  constructor(@InjectQueue(SNAP_QUEUE_NAME) private readonly snapQueue: Queue<{ name: string; url: string }>) {}
 
-  async execute({ url }: GenerateSnapCommand): Promise<void> {
-    this.snapQueue.add(GENERATE_SNAP, { url });
+  async execute({ name, url }: GenerateSnapCommand): Promise<void> {
+    this.snapQueue.add(GENERATE_SNAP, { name, url });
   }
 }

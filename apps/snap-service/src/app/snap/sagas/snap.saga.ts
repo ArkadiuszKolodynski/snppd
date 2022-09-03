@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ofType, Saga } from '@nestjs/cqrs';
+import { ICommand, ofType, Saga } from '@nestjs/cqrs';
 import { SnapGeneratedEvent } from '@snppd/events';
 import { map, Observable } from 'rxjs';
+import { CreateSnapCommand } from '../commands/impl/create-snap.command';
 
 @Injectable()
 export class SnapSagas {
   @Saga()
-  snapGenerated = (events$: Observable<any>): Observable<void> => {
+  snapGenerated = (events$: Observable<unknown>): Observable<ICommand> => {
     return events$.pipe(
       ofType(SnapGeneratedEvent),
-      map((event) => console.log(`Snap generated ${event}`))
+      map((event) => new CreateSnapCommand(event))
     );
   };
 }
