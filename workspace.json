@@ -4,6 +4,7 @@
     "auth-service": "apps/auth-service",
     "frontend": "apps/frontend",
     "frontend-e2e": "apps/frontend-e2e",
+    "models": "libs/models",
     "snap-service": "apps/snap-service",
     "user-service": "apps/user-service"
   }

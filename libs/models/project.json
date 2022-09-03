@@ -1,0 +1,72 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/models/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/models/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "nx-uvu:uvu",
+      "outputs": ["coverage/libs/models"],
+      "options": {
+        "rootDir": "libs/models/src",
+        "coverage": true,
+        "typescript": true
+      }
+    },
+    "generate-client": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma generate --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    },
+    "migrate-dev": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma migrate dev --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    },
+    "migrate-reset": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma migrate reset --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    },
+    "migrate-deploy": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma migrate deploy --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    },
+    "migrate-resolve": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma migrate resolve --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    },
+    "migrate-status": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma migrate status --schema ./src/prisma/schema.prisma",
+        "cwd": "libs/models"
+      }
+    }
+  },
+  "tags": []
+}
