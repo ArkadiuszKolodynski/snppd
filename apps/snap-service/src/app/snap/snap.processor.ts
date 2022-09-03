@@ -1,5 +1,7 @@
 import { OnQueueActive, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
+import { SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
 import * as puppeteer from 'puppeteer';
 import { GENERATE_SNAP, SNAP_QUEUE_NAME } from './constants';
@@ -7,6 +9,8 @@ import { GENERATE_SNAP, SNAP_QUEUE_NAME } from './constants';
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
   private readonly logger = new Logger(SnapProcessor.name);
+
+  constructor(private readonly eventBus: EventBus) {}
 
   @Process(GENERATE_SNAP)
   async generateSnap(job: Job<{ url: string }>): Promise<void> {
@@ -16,8 +20,11 @@ export class SnapProcessor {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
-    await page.screenshot({ path: 'example.png', fullPage: true });
+    await page.screenshot({ path: 'dist/example.png', fullPage: true });
+    const title = await page.title();
+    const content = await page.content();
     await browser.close();
+    this.eventBus.publish(new SnapGeneratedEvent(title, 'url', content));
     this.logger.debug('Snap generating completed');
   }
 
