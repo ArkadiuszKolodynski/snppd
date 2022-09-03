@@ -1,7 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiCreatedResponse } from '@nestjs/swagger';
-import { Snap } from '@prisma/client';
-import { SnapResponse } from './docs';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiNoContentResponse } from '@nestjs/swagger';
 import { GenerateSnapDto } from './dto';
 import { SnapService } from './snap.service';
 
@@ -10,9 +8,10 @@ export class SnapController {
   constructor(private readonly snapService: SnapService) {}
 
   @Post('generate')
-  @ApiCreatedResponse({ type: SnapResponse })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'Triggers snap generation' })
   @ApiBadRequestResponse({ description: 'Validation errors' })
-  async generateSnap(@Body() generateSnapDto: GenerateSnapDto): Promise<Snap> {
+  async generate(@Body() generateSnapDto: GenerateSnapDto): Promise<void> {
     return this.snapService.generate(generateSnapDto);
   }
 }

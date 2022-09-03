@@ -1,18 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { suite } from 'uvu';
+import { instance } from 'uvu/assert';
 import { SnapService } from './snap.service';
 
-describe('SnapService', () => {
-  let service: SnapService;
+const SnapServiceSuite = suite<{ service: SnapService }>('SnapServiceSuite');
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [SnapService],
-    }).compile();
+SnapServiceSuite.before(async (context) => {
+  const app = await Test.createTestingModule({
+    providers: [SnapService],
+  }).compile();
 
-    service = module.get<SnapService>(SnapService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  context.service = app.get(SnapService);
 });
+
+SnapServiceSuite('service should be an instance of SnapService', ({ service }) => {
+  instance(service, SnapService);
+});
+SnapServiceSuite.run();
