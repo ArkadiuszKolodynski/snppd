@@ -4,9 +4,12 @@ orbs:
   node: circleci/node@5.0.2
 
 defaults: &defaults
-  resource_class: small
+  resource_class: medium
   docker:
-    - image: cimg/node:18.4.0
+    - image: cimg/node:18.8.0
+      environment:
+        NODE_OPTIONS: "--max-old-space-size=2048"
+        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
 
 commands:
   checkout_and_install:
