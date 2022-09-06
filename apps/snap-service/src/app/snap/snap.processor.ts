@@ -3,9 +3,9 @@ import { Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
-import { convert } from 'html-to-text';
 import * as puppeteer from 'puppeteer';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from './constants';
+import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../constants';
+import { convertHtmlToText } from './utils/convert-html-to-text';
 
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
@@ -24,22 +24,11 @@ export class SnapProcessor {
     await page.screenshot({ path: 'dist/example.png', fullPage: true });
     const title = await page.title();
     const htmlContent = await page.content();
-    const textContent = await this.convertHtmlContentToText(htmlContent);
+    const textContent = await convertHtmlToText(htmlContent);
     await browser.close();
     //TODO: replace imageUrl with url from storage service
     this.eventBus.publish(new SnapGeneratedEvent(name, url, title, 'url', htmlContent, textContent));
     this.logger.debug('Snap generating completed');
-  }
-
-  async convertHtmlContentToText(htmlContent: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      try {
-        const textContent = convert(htmlContent);
-        resolve(textContent);
-      } catch (err) {
-        reject(err);
-      }
-    });
   }
 
   @OnQueueActive()
