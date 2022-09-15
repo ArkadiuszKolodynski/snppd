@@ -2,20 +2,21 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ParamsValidationTest } from '@snppd/common';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import * as request from 'supertest';
 import { suite } from 'uvu';
-import * as assert from 'uvu/assert';
-import { AppModule } from '../../app.module';
-import { GenerateSnapDto } from '../dto';
-import { SnapController } from '../snap.controller';
-import { SnapService } from '../snap.service';
+import { AppModule } from '../../../src/app/app.module';
+import { GenerateSnapDto } from '../../../src/app/snap/dto';
+import { SnapController } from '../../../src/app/snap/snap.controller';
+import { SnapService } from '../../../src/app/snap/snap.service';
 import { SnapServiceMock } from './snap-service.mock';
 
-const generateSnapSuite = suite<{ app: INestApplication; controller: SnapController; endpoint: string }>(
+const generateSnapE2eSuite = suite<{ app: INestApplication; controller: SnapController; endpoint: string }>(
   'Generate Snap - e2e'
 );
 
-generateSnapSuite.before(async (context) => {
+generateSnapE2eSuite.before(async (context) => {
   const module = await Test.createTestingModule({
     imports: [AppModule],
   })
@@ -30,13 +31,13 @@ generateSnapSuite.before(async (context) => {
   await context.app.init();
 });
 
-generateSnapSuite.after(async ({ app }) => {
+generateSnapE2eSuite.after(async ({ app }) => {
   await app.close();
 });
 
 const validParams: GenerateSnapDto = { name: faker.word.verb(5), url: faker.internet.url() };
 
-generateSnapSuite(`should return 204 No Content when valid request body is passed`, async ({ app, endpoint }) => {
+generateSnapE2eSuite(`should return 204 No Content when valid request body is passed`, async ({ app, endpoint }) => {
   await request(app.getHttpServer()).post(endpoint).send(validParams).expect(HttpStatus.NO_CONTENT);
 });
 
@@ -63,8 +64,8 @@ const validationTests: ParamsValidationTest<GenerateSnapDto>[] = [
   { params: { ...validParams, url: 'not an URL' }, testDescription: 'is not an URL', testedVariable: 'url' },
 ];
 
-validationTests.map((validationTest) => {
-  generateSnapSuite(
+validationTests.forEach((validationTest) => {
+  generateSnapE2eSuite(
     `should return 400 Bad Request when ${validationTest.testedVariable} ${validationTest.testDescription}`,
     async ({ app, endpoint }) => {
       const response = await request(app.getHttpServer())
@@ -72,9 +73,40 @@ validationTests.map((validationTest) => {
         .send(validationTest.params)
         .expect(HttpStatus.BAD_REQUEST);
 
-      assert.ok(response.body.message);
+      expect(response.body.message).to.exist;
     }
   );
 });
 
-generateSnapSuite.run();
+const generateSnapUnitSuite = suite<{ app: INestApplication; controller: SnapController; service: SnapService }>(
+  'Generate Snap - unit'
+);
+
+generateSnapUnitSuite.before(async (context) => {
+  const module = await Test.createTestingModule({
+    controllers: [SnapController],
+    providers: [SnapService],
+  })
+    .overrideProvider(SnapService)
+    .useClass(SnapServiceMock)
+    .compile();
+
+  context.controller = module.get(SnapController);
+  context.service = module.get(SnapService);
+});
+
+generateSnapUnitSuite.after.each(() => {
+  sinon.restore();
+});
+
+generateSnapUnitSuite('should call SnapService.execute method', async ({ controller, service }) => {
+  const spy = sinon.spy(service, 'generate');
+  const generateSnapDto: GenerateSnapDto = { name: faker.random.words(3), url: faker.internet.url() };
+
+  await controller.generate(generateSnapDto);
+
+  expect(spy.calledOnceWithExactly(generateSnapDto)).to.be.true;
+});
+
+generateSnapE2eSuite.run();
+generateSnapUnitSuite.run();

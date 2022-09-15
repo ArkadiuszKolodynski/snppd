@@ -43,7 +43,7 @@
     "test": {
       "executor": "nx-uvu:uvu",
       "options": {
-        "rootDir": "apps/snap-service/src",
+        "rootDir": "apps/snap-service/test",
         "coverage": true,
         "typescript": true
       }

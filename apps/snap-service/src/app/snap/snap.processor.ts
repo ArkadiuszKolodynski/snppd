@@ -3,32 +3,24 @@ import { Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
-import * as puppeteer from 'puppeteer';
 import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../constants';
-import { convertHtmlToText } from './utils/convert-html-to-text';
+import { Snapper } from './snapper.class';
 
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
   private readonly logger = new Logger(SnapProcessor.name);
 
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(private readonly eventBus: EventBus, private readonly snapper: Snapper) {}
 
   @Process(GENERATE_SNAP)
   async generateSnap(job: Job<{ name: string; url: string }>): Promise<void> {
-    this.logger.debug('Start generating snap...');
+    this.logger.debug('Generating new snap...');
     this.logger.debug(job.data);
     const { name, url } = job.data;
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url);
-    await page.screenshot({ path: 'dist/example.png', fullPage: true });
-    const title = await page.title();
-    const htmlContent = await page.content();
-    const textContent = await convertHtmlToText(htmlContent);
-    await browser.close();
+    const { htmlContent, textContent, title } = await this.snapper.generateSnap(url);
     //TODO: replace imageUrl with url from storage service
-    this.eventBus.publish(new SnapGeneratedEvent(name, url, title, 'url', htmlContent, textContent));
-    this.logger.debug('Snap generating completed');
+    this.logger.debug('Generating snap completed!');
+    this.eventBus.publish(new SnapGeneratedEvent({ name, url, title, imageUrl: 'url', htmlContent, textContent }));
   }
 
   @OnQueueActive()

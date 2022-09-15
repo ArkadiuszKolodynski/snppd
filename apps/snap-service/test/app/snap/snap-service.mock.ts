@@ -1,5 +1,5 @@
-import { GenerateSnapDto } from '../dto';
-import { SnapService } from '../snap.service';
+import { GenerateSnapDto } from '../../../src/app/snap/dto';
+import { SnapService } from '../../../src/app/snap/snap.service';
 
 type ISnapService = { [P in keyof SnapService]: SnapService[P] };
 

@@ -1,5 +1,5 @@
-import { SnapPayload } from '../../interfaces/snap-payload.interface';
+import { GeneratedSnap } from '@snppd/common';
 
 export class CreateSnapCommand {
-  constructor(public readonly payload: SnapPayload) {}
+  constructor(public readonly generatedSnap: GeneratedSnap) {}
 }

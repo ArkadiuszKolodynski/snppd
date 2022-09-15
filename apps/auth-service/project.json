@@ -43,7 +43,7 @@
     "test": {
       "executor": "nx-uvu:uvu",
       "options": {
-        "rootDir": "apps/auth-service/src",
+        "rootDir": "apps/auth-service/test",
         "coverage": true,
         "typescript": true
       }

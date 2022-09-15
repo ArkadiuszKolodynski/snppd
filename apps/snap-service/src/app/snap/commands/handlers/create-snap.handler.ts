@@ -7,7 +7,7 @@ import { CreateSnapCommand } from '../impl/create-snap.command';
 export class CreateSnapHandler implements ICommandHandler<CreateSnapCommand> {
   constructor(private readonly snapDao: SnapDao) {}
 
-  async execute({ payload }: CreateSnapCommand): Promise<Snap> {
-    return this.snapDao.create({ ...payload });
+  async execute({ generatedSnap }: CreateSnapCommand): Promise<Snap> {
+    return this.snapDao.create(generatedSnap);
   }
 }

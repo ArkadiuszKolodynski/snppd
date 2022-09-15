@@ -1,4 +1,4 @@
-export interface SnapPayload {
+export interface GeneratedSnap {
   name: string;
   url: string;
   title: string;
