@@ -48,8 +48,9 @@ generateSnapUnitSuite.after.each(() => {
 
 generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ processor, snapper }) => {
   const spy = sinon.spy(snapper, 'generateSnap');
+  const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name: faker.lorem.words(3), url } } as Job<GenerateSnapJobPayload>;
+  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
 
   await processor.generateSnap(job);
 
@@ -58,17 +59,27 @@ generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ proces
 
 generateSnapUnitSuite('should not trigger the event if snapper throws', async ({ processor, eventBus, snapper }) => {
   const spy = sinon.spy(eventBus, 'publish');
-  sinon.stub(snapper, 'generateSnap').throws(new Error('asdf'));
+  sinon.stub(snapper, 'generateSnap').throws();
+  const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name: faker.lorem.words(3), url } } as Job<GenerateSnapJobPayload>;
+  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
 
-  expect(processor.generateSnap(job)).to.throw();
-  expect(spy.notCalled).to.be.true;
+  try {
+    await processor.generateSnap(job);
+  } catch (err) {
+    expect(err).to.be.an('error');
+    expect(spy.notCalled).to.be.true;
+    return;
+  }
+
+  expect.fail('Generate snap error was not thrown!');
 });
 
 generateSnapUnitSuite('should call EventBus.publish method', async ({ processor, eventBus }) => {
   const spy = sinon.spy(eventBus, 'publish');
-  const job = { data: { name: faker.lorem.words(3), url: faker.internet.url() } } as Job<GenerateSnapJobPayload>;
+  const name = faker.lorem.words(3);
+  const url = faker.internet.url();
+  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
 
   await processor.generateSnap(job);
 
