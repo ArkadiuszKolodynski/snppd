@@ -4,16 +4,18 @@ import * as puppeteer from 'puppeteer';
 
 @Injectable()
 export class Snapper {
-  async generateSnap(url: string): Promise<{ title: string; htmlContent: string; textContent: string }> {
+  async generateSnap(
+    url: string
+  ): Promise<{ imageBuffer: Buffer; title: string; htmlContent: string; textContent: string }> {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
-    await page.screenshot({ path: 'dist/example.png', fullPage: true });
+    const imageBuffer = (await page.screenshot({ fullPage: true, omitBackground: true })) as Buffer;
     const title = await page.title();
     const htmlContent = await page.content();
     const textContent = await this.convertHtmlToText(htmlContent);
     await browser.close();
-    return { title, htmlContent, textContent };
+    return { imageBuffer, title, htmlContent, textContent };
   }
 
   private convertHtmlToText(htmlContent: string): Promise<string> {

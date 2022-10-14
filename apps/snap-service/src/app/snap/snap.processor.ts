@@ -1,6 +1,8 @@
+import { faker } from '@faker-js/faker';
 import { OnQueueActive, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
+import { GenerateSnapJobPayload } from '@snppd/common';
 import { SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
 import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../constants';
@@ -13,14 +15,18 @@ export class SnapProcessor {
   constructor(private readonly eventBus: EventBus, private readonly snapper: Snapper) {}
 
   @Process(GENERATE_SNAP)
-  async generateSnap(job: Job<{ name: string; url: string }>): Promise<void> {
+  async generateSnap(job: Job<GenerateSnapJobPayload>): Promise<void> {
     this.logger.debug('Generating new snap...');
     this.logger.debug(job.data);
     const { name, url } = job.data;
-    const { htmlContent, textContent, title } = await this.snapper.generateSnap(url);
-    //TODO: replace imageUrl with url from storage service
+    // TODO: pass imageBuffer to storage service and return public url
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { imageBuffer, htmlContent, textContent, title } = await this.snapper.generateSnap(url);
     this.logger.debug('Generating snap completed!');
-    this.eventBus.publish(new SnapGeneratedEvent({ name, url, title, imageUrl: 'url', htmlContent, textContent }));
+    // TODO: replace imageUrl with url from storage service
+    this.eventBus.publish(
+      new SnapGeneratedEvent({ name, url, title, imageUrl: faker.internet.url(), htmlContent, textContent })
+    );
   }
 
   @OnQueueActive()

@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import 'svelte';
 import App from './App.svelte';
 
 describe('app', () => {
