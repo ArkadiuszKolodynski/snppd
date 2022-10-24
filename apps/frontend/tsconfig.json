@@ -7,7 +7,6 @@
     "preserveValueImports": true,
     "isolatedModules": true,
     "sourceMap": true,
-    "types": ["node"],
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,

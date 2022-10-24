@@ -12,7 +12,7 @@
     },
     "test": {
       "executor": "nx-uvu:uvu",
-      "outputs": ["coverage/libs/models"],
+      "outputs": ["{workspaceRoot}/coverage/libs/models"],
       "options": {
         "rootDir": "libs/models/src",
         "coverage": true,
@@ -20,7 +20,7 @@
       }
     },
     "generate-client": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma generate --schema ./src/prisma/schema.prisma",
@@ -28,7 +28,7 @@
       }
     },
     "migrate-dev": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma migrate dev --schema ./src/prisma/schema.prisma",
@@ -36,7 +36,7 @@
       }
     },
     "migrate-reset": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma migrate reset --schema ./src/prisma/schema.prisma",
@@ -44,7 +44,7 @@
       }
     },
     "migrate-deploy": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma migrate deploy --schema ./src/prisma/schema.prisma",
@@ -52,7 +52,7 @@
       }
     },
     "migrate-resolve": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma migrate resolve --schema ./src/prisma/schema.prisma",
@@ -60,7 +60,7 @@
       }
     },
     "migrate-status": {
-      "executor": "@nrwl/workspace:run-commands",
+      "executor": "nx:run-commands",
       "outputs": [],
       "options": {
         "command": "npx prisma migrate status --schema ./src/prisma/schema.prisma",
