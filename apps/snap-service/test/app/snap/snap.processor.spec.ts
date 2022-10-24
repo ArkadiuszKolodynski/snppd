@@ -3,19 +3,19 @@ import { INestApplication } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { GenerateSnapJobPayload } from '@snppd/common';
-import { SnapGeneratedEvent } from '@snppd/events';
+import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { SnapExecutor } from '../../../src/app/snap/executors';
 import { SnapProcessor } from '../../../src/app/snap/snap.processor';
-import { Snapper } from '../../../src/app/snap/snapper.class';
 
 const generateSnapUnitSuite = suite<{
   app: INestApplication;
   eventBus: EventBus;
   processor: SnapProcessor;
-  snapper: Snapper;
+  snapExecutor: SnapExecutor;
 }>('Generate Snap - unit');
 
 generateSnapUnitSuite.before(async (context) => {
@@ -24,7 +24,7 @@ generateSnapUnitSuite.before(async (context) => {
       SnapProcessor,
       { provide: EventBus, useValue: { publish: () => null } },
       {
-        provide: Snapper,
+        provide: SnapExecutor,
         useValue: {
           generateSnap: () => ({
             imageBuffer: Buffer.from(faker.datatype.string(), 'utf-8'),
@@ -39,14 +39,36 @@ generateSnapUnitSuite.before(async (context) => {
 
   context.eventBus = module.get(EventBus);
   context.processor = module.get(SnapProcessor);
-  context.snapper = module.get(Snapper);
+  context.snapExecutor = module.get(SnapExecutor);
 });
 
 generateSnapUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ processor, snapper }) => {
+generateSnapUnitSuite('should log job info on active', async ({ processor }) => {
+  const loggerStub = sinon.stub(processor['logger'], 'log');
+  const name = faker.lorem.words(3);
+  const url = faker.internet.url();
+  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+
+  processor.onActive(job);
+
+  expect(loggerStub.calledOnceWith(sinon.match(job.data.name))).to.be.true;
+});
+
+generateSnapUnitSuite('should log error on failed', async ({ processor }) => {
+  const loggerStub = sinon.stub(processor['logger'], 'error');
+  const name = faker.lorem.words(3);
+  const url = faker.internet.url();
+  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+
+  processor.onFailed(job, new Error('Something went wrong'));
+
+  expect(loggerStub.calledOnceWith(sinon.match(job.data.name))).to.be.true;
+});
+
+generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ processor, snapExecutor: snapper }) => {
   const spy = sinon.spy(snapper, 'generateSnap');
   const name = faker.lorem.words(3);
   const url = faker.internet.url();
@@ -57,33 +79,33 @@ generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ proces
   expect(spy.calledOnceWithExactly(url)).to.be.true;
 });
 
-generateSnapUnitSuite('should not trigger the event if snapper throws', async ({ processor, eventBus, snapper }) => {
-  const spy = sinon.spy(eventBus, 'publish');
-  sinon.stub(snapper, 'generateSnap').throws();
-  const name = faker.lorem.words(3);
-  const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+generateSnapUnitSuite(
+  'should call EventBus.publish method with SnapGeneratedEvent if snap was generated successfully',
+  async ({ processor, eventBus }) => {
+    const spy = sinon.spy(eventBus, 'publish');
+    const name = faker.lorem.words(3);
+    const url = faker.internet.url();
+    const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
 
-  try {
     await processor.generateSnap(job);
-  } catch (err) {
-    expect(err).to.be.an('error');
-    expect(spy.notCalled).to.be.true;
-    return;
+
+    expect(spy.calledOnceWith(sinon.match.instanceOf(SnapGeneratedEvent))).to.be.true;
   }
+);
 
-  expect.fail('Generate snap error was not thrown!');
-});
+generateSnapUnitSuite(
+  'should call EventBus.publish method with SnapFailureEvent if snap was not generated',
+  async ({ processor, eventBus, snapExecutor }) => {
+    sinon.stub(snapExecutor, 'generateSnap').resolves(null);
+    const spy = sinon.spy(eventBus, 'publish');
+    const name = faker.lorem.words(3);
+    const url = faker.internet.url();
+    const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
 
-generateSnapUnitSuite('should call EventBus.publish method', async ({ processor, eventBus }) => {
-  const spy = sinon.spy(eventBus, 'publish');
-  const name = faker.lorem.words(3);
-  const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+    await processor.generateSnap(job);
 
-  await processor.generateSnap(job);
-
-  expect(spy.calledOnceWith(sinon.match.instanceOf(SnapGeneratedEvent))).to.be.true;
-});
+    expect(spy.calledOnceWith(sinon.match.instanceOf(SnapFailureEvent))).to.be.true;
+  }
+);
 
 generateSnapUnitSuite.run();

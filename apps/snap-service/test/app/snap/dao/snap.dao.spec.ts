@@ -6,7 +6,7 @@ import { PrismaService } from '@snppd/models';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { SnapDao } from '../../../src/app/snap/dao/snap.dao';
+import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
 const createSnapUnitSuite = suite<{ app: INestApplication; dao: SnapDao; service: PrismaService }>(
   'Create Snap - unit'

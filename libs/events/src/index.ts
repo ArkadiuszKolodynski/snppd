@@ -1,1 +1,1 @@
-export * from './lib/snap-generated.event';
+export * from './lib';

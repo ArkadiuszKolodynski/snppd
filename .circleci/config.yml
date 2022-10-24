@@ -6,7 +6,7 @@ orbs:
 defaults: &defaults
   resource_class: medium
   docker:
-    - image: cimg/node:18.10.0
+    - image: cimg/node:18.11.0
       environment:
         PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
 
@@ -30,7 +30,7 @@ jobs:
   test:
     <<: *defaults
     docker:
-      - image: cimg/node:18.10.0
+      - image: cimg/node:18.11.0
         environment:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - image: circleci/redis

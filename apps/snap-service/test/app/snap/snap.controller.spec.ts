@@ -10,7 +10,7 @@ import { AppModule } from '../../../src/app/app.module';
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { SnapController } from '../../../src/app/snap/snap.controller';
 import { SnapService } from '../../../src/app/snap/snap.service';
-import { SnapServiceMock } from './snap-service.mock';
+import { SnapServiceMock } from './snap.service.mock';
 
 const generateSnapE2eSuite = suite<{ app: INestApplication; controller: SnapController; endpoint: string }>(
   'Generate Snap - e2e'
