@@ -36,11 +36,17 @@ generateSnapUnitSuite.after.each(() => {
 
 generateSnapUnitSuite('should call CommandBus.execute method', async ({ commandBus, service }) => {
   const spy = sinon.spy(commandBus, 'execute');
-  const generateSnapDto: GenerateSnapDto = { name: faker.random.words(3), url: faker.internet.url() };
+  const generateSnapDto: GenerateSnapDto = {
+    name: faker.random.words(3),
+    url: faker.internet.url(),
+    tags: [faker.random.word(), faker.random.word()],
+  };
 
   await service.generate(generateSnapDto);
 
-  expect(spy.calledOnceWithExactly(new GenerateSnapCommand(generateSnapDto.name, generateSnapDto.url))).to.be.true;
+  expect(
+    spy.calledOnceWithExactly(new GenerateSnapCommand(generateSnapDto.name, generateSnapDto.url, generateSnapDto.tags))
+  ).to.be.true;
 });
 
 generateSnapUnitSuite.run();

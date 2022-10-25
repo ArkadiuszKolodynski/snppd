@@ -30,6 +30,7 @@ createSnapUnitSuite('should call PrismaService.snap.create method', async ({ dao
   const data: Prisma.SnapCreateInput = {
     name: faker.random.words(3),
     url: faker.internet.url(),
+    tags: [faker.random.word(), faker.random.word()],
     title: faker.lorem.sentence(3),
     imageUrl: faker.internet.url(),
   };

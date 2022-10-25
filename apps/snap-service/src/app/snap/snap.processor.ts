@@ -19,7 +19,7 @@ export class SnapProcessor {
   async generateSnap(job: Job<GenerateSnapJobPayload>): Promise<void> {
     this.logger.debug('Generating new snap...');
     this.logger.debug(job.data);
-    const { name, url } = job.data;
+    const { name, url, tags } = job.data;
     // TODO: pass imageBuffer to storage service and return public url
     const generatedSnap = await this.snapExecutor.generateSnap(url);
     if (generatedSnap) {
@@ -28,7 +28,7 @@ export class SnapProcessor {
       this.logger.debug('Generating snap completed!');
       // TODO: replace imageUrl with url from storage service
       this.eventBus.publish(
-        new SnapGeneratedEvent({ name, url, title, imageUrl: faker.internet.url(), htmlContent, textContent })
+        new SnapGeneratedEvent({ name, url, title, tags, imageUrl: faker.internet.url(), htmlContent, textContent })
       );
     } else {
       this.logger.debug('Generating snap failure!');

@@ -33,6 +33,7 @@ createSnapCommandHandlerUnitSuite('should call SnapDao.create method', async ({ 
   const generatedSnap: GeneratedSnap = {
     name: faker.random.words(3),
     url: faker.internet.url(),
+    tags: [faker.random.word(), faker.random.word()],
     title: faker.lorem.sentence(3),
     imageUrl: faker.internet.url(),
     htmlContent: faker.lorem.paragraphs(2),

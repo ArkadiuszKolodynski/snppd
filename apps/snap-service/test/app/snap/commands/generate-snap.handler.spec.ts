@@ -34,10 +34,11 @@ generateSnapCommandHandlerUnitSuite('should call Queue.add method', async ({ han
   const spy = sinon.spy(queue, 'add');
   const name = faker.random.words(3);
   const url = faker.internet.url();
+  const tags = [faker.random.word(), faker.random.word()];
 
-  await handler.execute({ name, url });
+  await handler.execute({ name, url, tags });
 
-  expect(spy.calledOnceWithExactly(GENERATE_SNAP, { name, url })).to.be.true;
+  expect(spy.calledOnceWithExactly(GENERATE_SNAP, { name, url, tags })).to.be.true;
 });
 
 generateSnapCommandHandlerUnitSuite.run();

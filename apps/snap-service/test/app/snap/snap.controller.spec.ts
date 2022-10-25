@@ -35,7 +35,11 @@ generateSnapE2eSuite.after(async ({ app }) => {
   await app.close();
 });
 
-const validParams: GenerateSnapDto = { name: faker.word.verb(5), url: faker.internet.url() };
+const validParams: GenerateSnapDto = {
+  name: faker.word.verb(5),
+  url: faker.internet.url(),
+  tags: [faker.random.word(), faker.random.word()],
+};
 
 generateSnapE2eSuite(`should return 204 No Content when valid request body is passed`, async ({ app, endpoint }) => {
   await request(app.getHttpServer()).post(endpoint).send(validParams).expect(HttpStatus.NO_CONTENT);
@@ -62,6 +66,21 @@ const validationTests: ParamsValidationTest<GenerateSnapDto>[] = [
   { params: { ...validParams, url: undefined }, testDescription: 'is undefined', testedVariable: 'url' },
   { params: { ...validParams, url: '' }, testDescription: 'is empty', testedVariable: 'url' },
   { params: { ...validParams, url: 'not an URL' }, testDescription: 'is not an URL', testedVariable: 'url' },
+  {
+    params: { ...validParams, tags: 'not an string array' },
+    testDescription: 'is not an string array',
+    testedVariable: 'tags',
+  },
+  {
+    params: { ...validParams, tags: [''] },
+    testDescription: 'has an empty string',
+    testedVariable: 'tags',
+  },
+  {
+    params: { ...validParams, tags: [faker.random.alphaNumeric(256)] },
+    testDescription: 'has elements longer than 255 chars',
+    testedVariable: 'tags',
+  },
 ];
 
 validationTests.forEach((validationTest) => {
@@ -101,11 +120,10 @@ generateSnapUnitSuite.after.each(() => {
 
 generateSnapUnitSuite('should call SnapService.execute method', async ({ controller, service }) => {
   const spy = sinon.spy(service, 'generate');
-  const generateSnapDto: GenerateSnapDto = { name: faker.random.words(3), url: faker.internet.url() };
 
-  await controller.generate(generateSnapDto);
+  await controller.generate(validParams);
 
-  expect(spy.calledOnceWithExactly(generateSnapDto)).to.be.true;
+  expect(spy.calledOnceWithExactly(validParams)).to.be.true;
 });
 
 generateSnapE2eSuite.run();
