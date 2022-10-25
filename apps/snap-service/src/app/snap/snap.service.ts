@@ -8,6 +8,6 @@ export class SnapService {
   constructor(private readonly commandBus: CommandBus) {}
 
   async generate(data: GenerateSnapDto): Promise<void> {
-    return this.commandBus.execute(new GenerateSnapCommand(data.name, data.url));
+    return this.commandBus.execute(new GenerateSnapCommand(data.name, data.url, data.tags));
   }
 }
