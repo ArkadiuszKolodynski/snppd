@@ -3,6 +3,7 @@ CREATE TABLE "Snap" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "url" TEXT NOT NULL,
+    "tags" TEXT[],
     "title" TEXT NOT NULL,
     "htmlContent" TEXT,
     "textContent" TEXT,
