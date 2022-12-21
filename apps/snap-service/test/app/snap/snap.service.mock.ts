@@ -7,4 +7,8 @@ export class SnapServiceMock implements ISnapService {
   generate(data: GenerateSnapDto): Promise<void> {
     return;
   }
+
+  delete(id: string): Promise<void> {
+    return;
+  }
 }

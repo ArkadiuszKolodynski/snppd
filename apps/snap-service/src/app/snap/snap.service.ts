@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import { DeleteSnapCommand } from './commands/impl/delete-snap.command';
 import { GenerateSnapCommand } from './commands/impl/generate-snap.command';
 import { GenerateSnapDto } from './dto';
 
@@ -9,5 +10,9 @@ export class SnapService {
 
   async generate(data: GenerateSnapDto): Promise<void> {
     return this.commandBus.execute(new GenerateSnapCommand(data.name, data.url, data.tags));
+  }
+
+  async delete(id: string): Promise<void> {
+    return this.commandBus.execute(new DeleteSnapCommand(id));
   }
 }

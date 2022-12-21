@@ -9,4 +9,8 @@ export class SnapDao {
   async create(data: Prisma.SnapCreateInput): Promise<Snap> {
     return this.prismaService.snap.create({ data });
   }
+
+  async delete(id: string): Promise<Snap> {
+    return this.prismaService.snap.delete({ where: { id } });
+  }
 }
