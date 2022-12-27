@@ -7,7 +7,7 @@ import { Queue } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../../../../src/app/constants';
+import { GENERATE_SNAP_JOB, SNAP_QUEUE_NAME } from '../../../../src/app/constants';
 import { GenerateSnapHandler } from '../../../../src/app/snap/commands/handlers/generate-snap.handler';
 
 const generateSnapCommandHandlerUnitSuite = suite<{
@@ -38,7 +38,7 @@ generateSnapCommandHandlerUnitSuite('should call Queue.add method', async ({ han
 
   await handler.execute({ name, url, tags });
 
-  expect(spy.calledOnceWithExactly(GENERATE_SNAP, { name, url, tags })).to.be.true;
+  expect(spy.calledOnceWithExactly(GENERATE_SNAP_JOB, { name, url, tags })).to.be.true;
 });
 
 generateSnapCommandHandlerUnitSuite.run();

@@ -6,11 +6,15 @@ import { PrismaService } from '@snppd/models';
 export class SnapDao {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(data: Prisma.SnapCreateInput): Promise<Snap> {
+  create(data: Prisma.SnapCreateInput): Promise<Snap> {
     return this.prismaService.snap.create({ data });
   }
 
-  async delete(id: string): Promise<Snap> {
+  delete(id: string): Promise<Snap> {
     return this.prismaService.snap.delete({ where: { id } });
+  }
+
+  softDelete(id: string): Promise<Snap> {
+    return this.prismaService.snap.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 }

@@ -10,7 +10,7 @@ export class SnapSagas {
   snapGenerated(events$: Observable<IEvent>): Observable<ICommand> {
     return events$.pipe(
       ofType(SnapGeneratedEvent),
-      map((event) => new CreateSnapCommand(event.generatedSnap))
+      map((event) => new CreateSnapCommand(event.data))
     );
   }
 

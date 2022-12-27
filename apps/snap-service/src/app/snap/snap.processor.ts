@@ -5,7 +5,7 @@ import { EventBus } from '@nestjs/cqrs';
 import { GenerateSnapJobPayload } from '@snppd/common';
 import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../constants';
+import { GENERATE_SNAP_JOB, SNAP_QUEUE_NAME } from '../constants';
 import { SnapExecutor } from './executors';
 
 @Processor(SNAP_QUEUE_NAME)
@@ -15,7 +15,7 @@ export class SnapProcessor {
 
   constructor(private readonly eventBus: EventBus, @Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor) {}
 
-  @Process(GENERATE_SNAP)
+  @Process(GENERATE_SNAP_JOB)
   async generateSnap(job: Job<GenerateSnapJobPayload>): Promise<void> {
     this.logger.debug('Generating new snap...');
     this.logger.debug(job.data);
