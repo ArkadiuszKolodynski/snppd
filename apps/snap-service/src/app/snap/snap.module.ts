@@ -5,6 +5,7 @@ import { SNAP_QUEUE_NAME } from '../constants';
 import { CommandHandlers } from './commands/handlers';
 import { SnapDao } from './dao/snap.dao';
 import { PuppeteerSnapExecutor, SnapExecutor } from './executors';
+import { QueryHandlers } from './queries/handlers';
 import { SnapSagas } from './sagas/snap.sagas';
 import { SnapController } from './snap.controller';
 import { SnapProcessor } from './snap.processor';
@@ -20,6 +21,7 @@ import { SnapService } from './snap.service';
     SnapService,
     { provide: SnapExecutor, useClass: PuppeteerSnapExecutor },
     ...CommandHandlers,
+    ...QueryHandlers,
   ],
 })
 export class SnapModule {}

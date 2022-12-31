@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@snppd/models';
@@ -14,6 +15,7 @@ const createSnapUnitSuite = suite<{ app: INestApplication; dao: SnapDao; service
 
 createSnapUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
+    imports: [ConfigModule],
     providers: [SnapDao, { provide: PrismaService, useValue: { snap: { create: () => null } } }],
   }).compile();
 

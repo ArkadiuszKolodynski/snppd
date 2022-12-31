@@ -1,13 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
-import { Snap } from '@prisma/client';
-import { PrismaService } from '@snppd/models';
-import { GenerateSnapDto, SnapDto } from './dto';
+import { GenerateSnapDto } from './dto';
 import { SnapService } from './snap.service';
 
 @Controller('snaps')
 export class SnapController {
-  constructor(private readonly snapService: SnapService, private readonly prismaService: PrismaService) {}
+  constructor(private readonly snapService: SnapService) {}
 
   @Post('generate')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -18,14 +16,9 @@ export class SnapController {
   }
 
   @Delete(':id')
-  @ApiOkResponse({ type: SnapDto })
+  @ApiOkResponse()
   @ApiBadRequestResponse({ description: 'Validation errors' })
   delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.snapService.delete(id);
-  }
-
-  @Get()
-  getSnaps(): Promise<Snap[]> {
-    return this.prismaService.snap.findMany();
   }
 }

@@ -5,7 +5,7 @@ import { Test } from '@nestjs/testing';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { GenerateSnapCommand } from '../../../src/app/snap/commands/impl/generate-snap.command';
+import { EnqueueSnapGenerationCommand } from '../../../src/app/snap/commands/impl/enqueue-snap-generation.command';
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { SnapService } from '../../../src/app/snap/snap.service';
 
@@ -44,9 +44,7 @@ generateSnapUnitSuite('should call CommandBus.execute method', async ({ commandB
 
   await service.generate(generateSnapDto);
 
-  expect(
-    spy.calledOnceWithExactly(new GenerateSnapCommand(generateSnapDto.name, generateSnapDto.url, generateSnapDto.tags))
-  ).to.be.true;
+  expect(spy.calledOnceWithExactly(new EnqueueSnapGenerationCommand(generateSnapDto))).to.be.true;
 });
 
 generateSnapUnitSuite.run();

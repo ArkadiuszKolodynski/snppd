@@ -1,13 +1,13 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
+import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { GenerateSnapJobPayload } from '@snppd/common';
 import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { SnapExecutor } from '../../../src/app/snap/executors';
 import { SnapProcessor } from '../../../src/app/snap/snap.processor';
 
@@ -19,27 +19,32 @@ const generateSnapUnitSuite = suite<{
 }>('Generate Snap - unit');
 
 generateSnapUnitSuite.before(async (context) => {
-  const module = await Test.createTestingModule({
-    providers: [
-      SnapProcessor,
-      { provide: EventBus, useValue: { publish: () => null } },
-      {
-        provide: SnapExecutor,
-        useValue: {
-          generateSnap: () => ({
-            imageBuffer: Buffer.from(faker.datatype.string(), 'utf-8'),
-            title: faker.lorem.words(3),
-            htmlContent: faker.lorem.paragraphs(2),
-            textContent: faker.lorem.paragraphs(2),
-          }),
+  try {
+    const module = await Test.createTestingModule({
+      providers: [
+        SnapProcessor,
+        { provide: CommandBus, useValue: { execute: () => null } },
+        { provide: EventBus, useValue: { publish: () => null } },
+        {
+          provide: SnapExecutor,
+          useValue: {
+            generateSnap: () => ({
+              imageBuffer: Buffer.from(faker.datatype.string(), 'utf-8'),
+              title: faker.lorem.words(3),
+              htmlContent: faker.lorem.paragraphs(2),
+              textContent: faker.lorem.paragraphs(2),
+            }),
+          },
         },
-      },
-    ],
-  }).compile();
+      ],
+    }).compile();
 
-  context.eventBus = module.get(EventBus);
-  context.processor = module.get(SnapProcessor);
-  context.snapExecutor = module.get(SnapExecutor);
+    context.eventBus = module.get(EventBus);
+    context.processor = module.get(SnapProcessor);
+    context.snapExecutor = module.get(SnapExecutor);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 generateSnapUnitSuite.after.each(() => {
@@ -50,7 +55,7 @@ generateSnapUnitSuite('should log job info on active', async ({ processor }) => 
   const loggerStub = sinon.stub(processor['logger'], 'log');
   const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+  const job = { data: { name, url } } as Job<GenerateSnapDto>;
 
   processor.onActive(job);
 
@@ -61,7 +66,7 @@ generateSnapUnitSuite('should log error on failed', async ({ processor }) => {
   const loggerStub = sinon.stub(processor['logger'], 'error');
   const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+  const job = { data: { name, url } } as Job<GenerateSnapDto>;
 
   processor.onFailed(job, new Error('Something went wrong'));
 
@@ -72,7 +77,7 @@ generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ proces
   const spy = sinon.spy(snapper, 'generateSnap');
   const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+  const job = { data: { name, url } } as Job<GenerateSnapDto>;
 
   await processor.generateSnap(job);
 
@@ -85,7 +90,7 @@ generateSnapUnitSuite(
     const spy = sinon.spy(eventBus, 'publish');
     const name = faker.lorem.words(3);
     const url = faker.internet.url();
-    const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+    const job = { data: { name, url } } as Job<GenerateSnapDto>;
 
     await processor.generateSnap(job);
 
@@ -100,7 +105,7 @@ generateSnapUnitSuite(
     const spy = sinon.spy(eventBus, 'publish');
     const name = faker.lorem.words(3);
     const url = faker.internet.url();
-    const job = { data: { name, url } } as Job<GenerateSnapJobPayload>;
+    const job = { data: { name, url } } as Job<GenerateSnapDto>;
 
     await processor.generateSnap(job);
 

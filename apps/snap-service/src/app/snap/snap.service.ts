@@ -1,18 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { GenerateSnapCommand } from './commands/impl/generate-snap.command';
-import { SoftDeleteSnapCommand } from './commands/impl/soft-delete-snap.command';
+import { DeleteSnapCommand } from './commands/impl/delete-snap.command';
+import { EnqueueSnapGenerationCommand } from './commands/impl/enqueue-snap-generation.command';
+import { ScheduleSnapsPruneCommand } from './commands/impl/schedule-snaps-prune.command';
 import { GenerateSnapDto } from './dto';
 
 @Injectable()
-export class SnapService {
+export class SnapService implements OnApplicationBootstrap {
   constructor(private readonly commandBus: CommandBus) {}
 
+  onApplicationBootstrap(): Promise<void> {
+    return this.commandBus.execute(new ScheduleSnapsPruneCommand());
+  }
+
   generate(generateSnapDto: GenerateSnapDto): Promise<void> {
-    return this.commandBus.execute(new GenerateSnapCommand(generateSnapDto));
+    return this.commandBus.execute(new EnqueueSnapGenerationCommand(generateSnapDto));
   }
 
   delete(id: string): Promise<void> {
-    return this.commandBus.execute(new SoftDeleteSnapCommand(id));
+    return this.commandBus.execute(new DeleteSnapCommand(id));
   }
 }
