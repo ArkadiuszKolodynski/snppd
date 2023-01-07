@@ -1,9 +1,3 @@
-export interface GeneratedSnap {
-  name: string;
-  url: string;
-  tags: string[];
-  title: string;
-  imageUrl: string;
-  htmlContent?: string;
-  textContent?: string;
-}
+import { Snap } from '@prisma/client';
+
+export type GeneratedSnap = Omit<Snap, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;

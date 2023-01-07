@@ -15,9 +15,9 @@ export class SnapProcessor {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Process(GENERATE_SNAP_JOB)
-  async generateSnap(job: Job<GenerateSnapDto>): Promise<void> {
+  async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {
     this.logger.debug('Generating snap...');
-    await this.commandBus.execute(new GenerateSnapCommand(job.data));
+    await this.commandBus.execute(new GenerateSnapCommand(job.data.generateSnapDto, job.data.userId));
   }
 
   @Process(PRUNE_SNAPS_JOB)

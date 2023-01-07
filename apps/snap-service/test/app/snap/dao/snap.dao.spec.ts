@@ -30,11 +30,20 @@ createSnapUnitSuite.after.each(() => {
 createSnapUnitSuite('should call PrismaService.snap.create method', async ({ dao, service }) => {
   const spy = sinon.spy(service.snap, 'create');
   const data: Prisma.SnapCreateInput = {
-    name: faker.random.words(3),
-    url: faker.internet.url(),
+    author: faker.name.fullName(),
+    content: faker.lorem.paragraph(),
+    excerpt: faker.lorem.sentences(),
+    htmlContent: faker.lorem.paragraph(),
+    id: faker.datatype.uuid(),
+    lang: faker.random.locale(),
+    length: faker.datatype.number(),
+    screenshotUrl: faker.image.imageUrl(),
+    snapImageUrl: faker.image.imageUrl(),
     tags: [faker.random.word(), faker.random.word()],
+    textContent: faker.lorem.paragraph(),
     title: faker.lorem.sentence(3),
-    imageUrl: faker.internet.url(),
+    url: faker.internet.url(),
+    userId: faker.datatype.uuid(),
   };
 
   await dao.create(data);

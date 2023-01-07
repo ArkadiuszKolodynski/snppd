@@ -10,13 +10,13 @@ import { GENERATE_SNAP_JOB, SNAP_QUEUE_NAME } from '../../../../src/app/constant
 import { EnqueueSnapGenerationHandler } from '../../../../src/app/snap/commands/handlers/enqueue-snap-generation.handler';
 import { GenerateSnapDto } from '../../../../src/app/snap/dto';
 
-const generateSnapCommandHandlerUnitSuite = suite<{
+const enqueueSnapGenerationCommandHandlerUnitSuite = suite<{
   app: INestApplication;
   handler: EnqueueSnapGenerationHandler;
   queue: Queue<GenerateSnapDto>;
 }>('Generate Snap Command Handler - unit');
 
-generateSnapCommandHandlerUnitSuite.before(async (context) => {
+enqueueSnapGenerationCommandHandlerUnitSuite.before(async (context) => {
   const queueToken = getQueueToken(SNAP_QUEUE_NAME);
   const module = await Test.createTestingModule({
     providers: [EnqueueSnapGenerationHandler, { provide: queueToken, useValue: { add: () => null } }],
@@ -26,19 +26,19 @@ generateSnapCommandHandlerUnitSuite.before(async (context) => {
   context.queue = module.get(queueToken);
 });
 
-generateSnapCommandHandlerUnitSuite.after.each(() => {
+enqueueSnapGenerationCommandHandlerUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-generateSnapCommandHandlerUnitSuite('should call Queue.add method', async ({ handler, queue }) => {
+enqueueSnapGenerationCommandHandlerUnitSuite('should call Queue.add method', async ({ handler, queue }) => {
   const spy = sinon.spy(queue, 'add');
-  const name = faker.random.words(3);
   const url = faker.internet.url();
   const tags = [faker.random.word(), faker.random.word()];
+  const userId = faker.datatype.uuid();
 
-  await handler.execute({ generateSnapDto: { name, tags, url } });
+  await handler.execute({ generateSnapDto: { tags, url }, userId });
 
-  expect(spy.calledOnceWithExactly(GENERATE_SNAP_JOB, { name, url, tags })).to.be.true;
+  expect(spy.calledOnceWithExactly(GENERATE_SNAP_JOB, { url, tags })).to.be.true;
 });
 
-generateSnapCommandHandlerUnitSuite.run();
+enqueueSnapGenerationCommandHandlerUnitSuite.run();

@@ -9,12 +9,13 @@ import { EnqueueSnapGenerationCommand } from '../impl/enqueue-snap-generation.co
 @CommandHandler(EnqueueSnapGenerationCommand)
 export class EnqueueSnapGenerationHandler implements ICommandHandler<EnqueueSnapGenerationCommand> {
   constructor(
-    @InjectQueue(SNAP_QUEUE_NAME) private readonly snapQueue: Queue<GenerateSnapDto>,
+    @InjectQueue(SNAP_QUEUE_NAME)
+    private readonly snapQueue: Queue<{ generateSnapDto: GenerateSnapDto; userId: string }>,
     private readonly eventBus: EventBus
   ) {}
 
-  async execute({ generateSnapDto }: EnqueueSnapGenerationCommand): Promise<void> {
-    await this.snapQueue.add(GENERATE_SNAP_JOB, generateSnapDto);
-    this.eventBus.publish(new SnapEnqueuedEvent(generateSnapDto.url));
+  async execute({ generateSnapDto, userId }: EnqueueSnapGenerationCommand): Promise<void> {
+    await this.snapQueue.add(GENERATE_SNAP_JOB, { generateSnapDto, userId });
+    this.eventBus.publish(new SnapEnqueuedEvent(generateSnapDto.url, userId));
   }
 }

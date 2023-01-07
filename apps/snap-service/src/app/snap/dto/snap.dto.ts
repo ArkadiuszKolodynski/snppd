@@ -6,8 +6,8 @@ export class SnapDto implements Snap {
   @ApiProperty({ format: 'uuid' })
   id: string;
 
-  @ApiProperty({ example: faker.lorem.slug() })
-  name: string;
+  @ApiProperty({ format: 'uuid' })
+  userId: string;
 
   @ApiProperty({ example: faker.internet.url() })
   url: string;
@@ -18,14 +18,32 @@ export class SnapDto implements Snap {
   @ApiProperty({ example: faker.lorem.sentence(4) })
   title: string;
 
+  @ApiPropertyOptional({ example: faker.name.fullName() })
+  author: string | null;
+
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  htmlContent: string | null;
+  content: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
   textContent: string | null;
 
-  @ApiProperty({ example: faker.internet.url() })
-  imageUrl: string;
+  @ApiPropertyOptional({ example: faker.lorem.paragraph() })
+  htmlContent: string | null;
+
+  @ApiPropertyOptional({ example: faker.lorem.sentence() })
+  excerpt: string | null;
+
+  @ApiPropertyOptional({ example: faker.datatype.number() })
+  length: number | null;
+
+  @ApiPropertyOptional({ example: faker.random.locale() })
+  lang: string | null;
+
+  @ApiPropertyOptional({ example: faker.image.imageUrl() })
+  screenshotUrl: string;
+
+  @ApiPropertyOptional({ example: faker.image.imageUrl() })
+  snapImageUrl: string;
 
   @ApiProperty()
   createdAt: Date;

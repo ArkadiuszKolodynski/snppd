@@ -7,10 +7,10 @@ import { DeleteSnapCommand } from '../impl/delete-snap.command';
 export class DeleteSnapHandler implements ICommandHandler<DeleteSnapCommand> {
   constructor(private readonly snapDao: SnapDao, private readonly eventBus: EventBus) {}
 
-  async execute({ id }: DeleteSnapCommand): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async execute({ id, userId }: DeleteSnapCommand): Promise<void> {
     // TODO: check if snap exist and if user owns snap
-    const asdf = await this.snapDao.delete(id);
-    console.log(asdf);
+    await this.snapDao.delete(id);
     this.eventBus.publish(new SnapDeletedEvent(id));
   }
 }

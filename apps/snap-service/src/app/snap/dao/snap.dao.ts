@@ -16,7 +16,7 @@ export class SnapDao {
     return this.prismaService.snap.create({ data });
   }
 
-  //FIXME: https://github.com/prisma/prisma/issues/10142
+  // FIXME: https://github.com/prisma/prisma/issues/10142
   async delete(id: string): Promise<Snap> {
     // return this.prismaService.snap.update({ where: { id }, data: { deletedAt: new Date() } });
     try {
@@ -26,7 +26,7 @@ export class SnapDao {
     }
   }
 
-  //FIXME: https://github.com/prisma/prisma/issues/8131
+  // FIXME: https://github.com/prisma/prisma/issues/8131
   prune(): Promise<Snap[]> {
     // return this.prismaService.snap.deleteMany({
     //   where: { deletedAt: { lte: subDays(new Date(), this.PRUNE_SNAPS_DELAY_IN_DAYS) } },

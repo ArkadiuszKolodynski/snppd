@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../lib/prisma.service';
 
-export function findSnapMiddleware(prismaService: PrismaService) {
+export function registerFindSnapMiddleware(prismaService: PrismaService) {
   prismaService.$use(async (params, next) => {
     if (params.model !== 'Snap') {
       return next(params);
