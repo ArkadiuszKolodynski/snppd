@@ -1,4 +1,4 @@
-import { GeneratedSnap } from '@snppd/common';
+import { GeneratedSnap } from '@snppd/shared';
 
 export class CreateSnapCommand {
   constructor(public readonly generatedSnap: GeneratedSnap) {}

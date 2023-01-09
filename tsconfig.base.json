@@ -15,9 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@snppd/common": ["libs/common/src/index.ts"],
       "@snppd/events": ["libs/events/src/index.ts"],
-      "@snppd/models": ["libs/models/src/index.ts"]
+      "@snppd/models": ["libs/models/src/index.ts"],
+      "@snppd/shared": ["libs/shared/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { CqrsModule } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { Snap } from '@prisma/client';
-import { FailedSnap, GeneratedSnap } from '@snppd/common';
+import { FailedSnap, GeneratedSnap } from '@snppd/shared';
 import { SnapCreatedEvent, SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import { TestScheduler } from 'rxjs/testing';

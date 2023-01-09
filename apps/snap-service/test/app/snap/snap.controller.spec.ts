@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ParamsValidationTest } from '@snppd/common';
+import { ParamsValidationTest } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as request from 'supertest';

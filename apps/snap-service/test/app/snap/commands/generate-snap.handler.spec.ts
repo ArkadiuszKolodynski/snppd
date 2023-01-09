@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { GeneratedSnap } from '@snppd/common';
+import { GeneratedSnap } from '@snppd/shared';
 import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
