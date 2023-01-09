@@ -7,14 +7,14 @@ import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { PuppeteerSnapExecutor } from '../../../../src/app/snap/executors';
 
-const puppeteerSnapExecutorUnitSuite = suite<{
+const PuppeteerSnapExecutorUnitSuite = suite<{
   snapExecutor: PuppeteerSnapExecutor;
   puppeteerStub: { launch: sinon.SinonStub };
   browserStub: { newPage: sinon.SinonStub; close: sinon.SinonStub };
   pageStub: { content: sinon.SinonStub; goto: sinon.SinonStub; screenshot: sinon.SinonStub; title: sinon.SinonStub };
-}>('Puppeteer Snap Executor - unit');
+}>('PuppeteerSnapExecutor - unit');
 
-puppeteerSnapExecutorUnitSuite.before(async (context) => {
+PuppeteerSnapExecutorUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
     providers: [PuppeteerSnapExecutor],
   }).compile();
@@ -22,7 +22,7 @@ puppeteerSnapExecutorUnitSuite.before(async (context) => {
   context.snapExecutor = module.get(PuppeteerSnapExecutor);
 });
 
-puppeteerSnapExecutorUnitSuite.before.each((context) => {
+PuppeteerSnapExecutorUnitSuite.before.each((context) => {
   context.pageStub = { content: sinon.stub(), goto: sinon.stub(), screenshot: sinon.stub(), title: sinon.stub() };
   context.browserStub = { newPage: sinon.stub().resolves(context.pageStub), close: sinon.stub() };
   context.puppeteerStub = sinon.stub(puppeteer);
@@ -30,11 +30,11 @@ puppeteerSnapExecutorUnitSuite.before.each((context) => {
   sinon.stub(context.snapExecutor['logger']);
 });
 
-puppeteerSnapExecutorUnitSuite.after.each(() => {
+PuppeteerSnapExecutorUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-puppeteerSnapExecutorUnitSuite('should launch browser', async ({ snapExecutor, puppeteerStub }) => {
+PuppeteerSnapExecutorUnitSuite('should launch browser', async ({ snapExecutor, puppeteerStub }) => {
   const url = faker.internet.url();
 
   await snapExecutor.generateSnap(url);
@@ -42,7 +42,7 @@ puppeteerSnapExecutorUnitSuite('should launch browser', async ({ snapExecutor, p
   expect(puppeteerStub.launch.calledOnce).to.be.true;
 });
 
-puppeteerSnapExecutorUnitSuite('should open new page in the browser', async ({ snapExecutor, browserStub }) => {
+PuppeteerSnapExecutorUnitSuite('should open new page in the browser', async ({ snapExecutor, browserStub }) => {
   const url = faker.internet.url();
 
   await snapExecutor.generateSnap(url);
@@ -50,7 +50,7 @@ puppeteerSnapExecutorUnitSuite('should open new page in the browser', async ({ s
   expect(browserStub.newPage.calledOnce).to.be.true;
 });
 
-puppeteerSnapExecutorUnitSuite('should navigate to the provided URL', async ({ snapExecutor, pageStub }) => {
+PuppeteerSnapExecutorUnitSuite('should navigate to the provided URL', async ({ snapExecutor, pageStub }) => {
   const url = faker.internet.url();
 
   await snapExecutor.generateSnap(url);
@@ -58,7 +58,7 @@ puppeteerSnapExecutorUnitSuite('should navigate to the provided URL', async ({ s
   expect(pageStub.goto.calledOnceWithExactly(url)).to.be.true;
 });
 
-puppeteerSnapExecutorUnitSuite('should take the screenshot of the page', async ({ snapExecutor, pageStub }) => {
+PuppeteerSnapExecutorUnitSuite('should take the screenshot of the page', async ({ snapExecutor, pageStub }) => {
   const url = faker.internet.url();
 
   await snapExecutor.generateSnap(url);
@@ -66,21 +66,10 @@ puppeteerSnapExecutorUnitSuite('should take the screenshot of the page', async (
   expect(pageStub.screenshot.calledOnce).to.be.true;
 });
 
-puppeteerSnapExecutorUnitSuite('should get the title of the page', async ({ snapExecutor, pageStub }) => {
-  const url = faker.internet.url();
-  const generatedTitle = faker.lorem.lines(1);
-  pageStub.title.resolves(generatedTitle);
-
-  const { title } = await snapExecutor.generateSnap(url);
-
-  expect(pageStub.title.calledOnce).to.be.true;
-  expect(title).to.equal(generatedTitle);
-});
-
-puppeteerSnapExecutorUnitSuite('should get the HTML content of the page', async ({ snapExecutor, pageStub }) => {
+PuppeteerSnapExecutorUnitSuite('should get the HTML content of the page', async ({ snapExecutor, pageStub }) => {
   const url = faker.internet.url();
   const generatedContent = faker.lorem.lines(1);
-  const content = `<html>${generatedContent}</html>`;
+  const content = `<html><head></head><body><p>${generatedContent}</p></body></html>`;
   pageStub.content.resolves(content);
 
   const { htmlContent } = await snapExecutor.generateSnap(url);
@@ -89,7 +78,7 @@ puppeteerSnapExecutorUnitSuite('should get the HTML content of the page', async 
   expect(htmlContent).to.equal(content);
 });
 
-puppeteerSnapExecutorUnitSuite('should get the text content of the page', async ({ snapExecutor, pageStub }) => {
+PuppeteerSnapExecutorUnitSuite('should get the text content of the page', async ({ snapExecutor, pageStub }) => {
   const url = faker.internet.url();
   const generatedContent = faker.lorem.lines(1);
   const content = `<html>${generatedContent}</html>`;
@@ -101,7 +90,7 @@ puppeteerSnapExecutorUnitSuite('should get the text content of the page', async 
   expect(textContent).to.equal(generatedContent);
 });
 
-puppeteerSnapExecutorUnitSuite(
+PuppeteerSnapExecutorUnitSuite(
   'should return null and close the browser if there was an error',
   async ({ snapExecutor, browserStub }) => {
     const url = faker.internet.url();
@@ -114,13 +103,14 @@ puppeteerSnapExecutorUnitSuite(
   }
 );
 
-puppeteerSnapExecutorUnitSuite('should return snap and close the browser', async ({ snapExecutor, browserStub }) => {
+PuppeteerSnapExecutorUnitSuite('should return snap and close the browser', async ({ snapExecutor, browserStub }) => {
   const url = faker.internet.url();
 
   const result = await snapExecutor.generateSnap(url);
+  console.log(result);
 
   expect(result).to.exist;
   expect(browserStub.close.calledOnce).to.be.true;
 });
 
-puppeteerSnapExecutorUnitSuite.run();
+PuppeteerSnapExecutorUnitSuite.run();

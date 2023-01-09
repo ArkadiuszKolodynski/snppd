@@ -24,9 +24,6 @@ export class ScheduleSnapsPruneHandler implements ICommandHandler<ScheduleSnapsP
     if (pruneSnapsJob && pruneSnapsJob.cron !== this.CRON) {
       await this.snapQueue.removeRepeatableByKey(pruneSnapsJob.key);
     }
-    await this.snapQueue.add(PRUNE_SNAPS_JOB, null, {
-      jobId: this.JOB_ID,
-      repeat: { cron: this.CRON },
-    });
+    await this.snapQueue.add(PRUNE_SNAPS_JOB, null, { jobId: this.JOB_ID, repeat: { cron: this.CRON } });
   }
 }

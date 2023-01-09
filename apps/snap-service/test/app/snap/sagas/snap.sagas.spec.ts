@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { INestApplication } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { Snap } from '@prisma/client';
 import { FailedSnap, GeneratedSnap } from '@snppd/common';
-import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
+import { SnapCreatedEvent, SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import { TestScheduler } from 'rxjs/testing';
 import * as sinon from 'sinon';
@@ -11,13 +11,9 @@ import { suite } from 'uvu';
 import { CreateSnapCommand } from '../../../../src/app/snap/commands/impl/create-snap.command';
 import { SnapSagas } from '../../../../src/app/snap/sagas/snap.sagas';
 
-const snapSagasUnitSuite = suite<{
-  app: INestApplication;
-  sagas: SnapSagas;
-  testScheduler: TestScheduler;
-}>('Handle Snap Generated Event - unit');
+const SnapSagasUnitSuite = suite<{ sagas: SnapSagas; testScheduler: TestScheduler }>('SnapSagas - unit');
 
-snapSagasUnitSuite.before(async (context) => {
+SnapSagasUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
     imports: [CqrsModule],
     providers: [SnapSagas],
@@ -26,25 +22,31 @@ snapSagasUnitSuite.before(async (context) => {
   context.sagas = module.get(SnapSagas);
 });
 
-snapSagasUnitSuite.before.each((context) => {
+SnapSagasUnitSuite.before.each((context) => {
   context.testScheduler = new TestScheduler((actual, expected) => {
     expect(actual).deep.equal(expected);
   });
 });
 
-snapSagasUnitSuite.after.each(() => {
+SnapSagasUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-snapSagasUnitSuite('should call new CreateSnapCommand on SnapGeneratedEvent', async ({ sagas, testScheduler }) => {
+SnapSagasUnitSuite('should call new CreateSnapCommand on SnapGeneratedEvent', async ({ sagas, testScheduler }) => {
   const generatedSnap: GeneratedSnap = {
-    name: faker.random.words(3),
+    author: faker.name.fullName(),
+    content: faker.lorem.paragraph(),
+    excerpt: faker.lorem.sentences(),
+    htmlContent: faker.lorem.paragraph(),
+    lang: faker.random.locale(),
+    length: faker.datatype.number(),
+    screenshotUrl: faker.image.imageUrl(),
+    snapImageUrl: faker.image.imageUrl(),
+    tags: [faker.word.noun(), faker.word.noun()],
+    textContent: faker.lorem.paragraph(),
+    title: faker.lorem.sentence(),
     url: faker.internet.url(),
-    tags: [faker.random.word(), faker.random.word()],
-    title: faker.lorem.sentence(3),
-    imageUrl: faker.internet.url(),
-    htmlContent: faker.lorem.paragraphs(2),
-    textContent: faker.lorem.paragraphs(2),
+    userId: faker.datatype.uuid(),
   };
 
   testScheduler.run(({ hot, expectObservable }) => {
@@ -60,10 +62,44 @@ snapSagasUnitSuite('should call new CreateSnapCommand on SnapGeneratedEvent', as
   });
 });
 
-snapSagasUnitSuite('should return null on SnapFailureEvent', async ({ sagas, testScheduler }) => {
-  const failedSnap: FailedSnap = {
-    name: faker.random.words(3),
+SnapSagasUnitSuite('should return null on SnapCreatedEvent', async ({ sagas, testScheduler }) => {
+  const createdSnap: Snap = {
+    author: faker.name.fullName(),
+    content: faker.lorem.paragraph(),
+    excerpt: faker.lorem.sentences(),
+    htmlContent: faker.lorem.paragraph(),
+    lang: faker.random.locale(),
+    length: faker.datatype.number(),
+    screenshotUrl: faker.image.imageUrl(),
+    snapImageUrl: faker.image.imageUrl(),
+    tags: [faker.word.noun(), faker.word.noun()],
+    textContent: faker.lorem.paragraph(),
+    title: faker.lorem.sentence(),
     url: faker.internet.url(),
+    userId: faker.datatype.uuid(),
+    id: faker.datatype.uuid(),
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    deletedAt: null,
+  };
+
+  testScheduler.run(({ hot, expectObservable }) => {
+    const events$ = hot('-v---- 5s -v--|', {
+      v: new SnapCreatedEvent(createdSnap),
+    });
+
+    const output$ = sagas.snapCreated(events$);
+
+    expectObservable(output$).toBe('-s---- 5s -s--|', {
+      s: null,
+    });
+  });
+});
+
+SnapSagasUnitSuite('should return null on SnapFailureEvent', async ({ sagas, testScheduler }) => {
+  const failedSnap: FailedSnap = {
+    url: faker.internet.url(),
+    userId: faker.datatype.uuid(),
   };
 
   testScheduler.run(({ hot, expectObservable }) => {
@@ -79,4 +115,4 @@ snapSagasUnitSuite('should return null on SnapFailureEvent', async ({ sagas, tes
   });
 });
 
-snapSagasUnitSuite.run();
+SnapSagasUnitSuite.run();

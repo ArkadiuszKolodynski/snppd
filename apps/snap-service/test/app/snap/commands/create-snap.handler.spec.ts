@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { INestApplication } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { Snap } from '@prisma/client';
@@ -11,16 +10,15 @@ import { suite } from 'uvu';
 import { CreateSnapHandler } from '../../../../src/app/snap/commands/handlers/create-snap.handler';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
-const createSnapCommandHandlerUnitSuite = suite<{
-  app: INestApplication;
+const CreateSnapCommandHandlerUnitSuite = suite<{
   createdSnap: Snap;
   dao: SnapDao;
   eventBus: EventBus;
   generatedSnap: GeneratedSnap;
   handler: CreateSnapHandler;
-}>('Create Snap Command Handler - unit');
+}>('CreateSnapHandler - unit');
 
-createSnapCommandHandlerUnitSuite.before(async (context) => {
+CreateSnapCommandHandlerUnitSuite.before(async (context) => {
   const generatedSnap: GeneratedSnap = {
     author: faker.name.fullName(),
     content: faker.lorem.paragraph(),
@@ -63,21 +61,27 @@ createSnapCommandHandlerUnitSuite.before(async (context) => {
   context.handler = module.get(CreateSnapHandler);
 });
 
-createSnapCommandHandlerUnitSuite.after.each(() => {
+CreateSnapCommandHandlerUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-createSnapCommandHandlerUnitSuite(
-  'should call SnapDao.create method and publish event',
-  async ({ createdSnap, dao, eventBus, generatedSnap, handler }) => {
-    const spyDao = sinon.spy(dao, 'create');
-    const spyEventBus = sinon.spy(eventBus, 'publish');
+CreateSnapCommandHandlerUnitSuite('should call SnapDao.create method', async ({ dao, generatedSnap, handler }) => {
+  const spy = sinon.spy(dao, 'create');
+
+  await handler.execute({ generatedSnap });
+
+  expect(spy.calledOnceWithExactly(generatedSnap)).to.be.true;
+});
+
+CreateSnapCommandHandlerUnitSuite(
+  'should publish SnapCreatedEvent',
+  async ({ createdSnap, eventBus, generatedSnap, handler }) => {
+    const spy = sinon.spy(eventBus, 'publish');
 
     await handler.execute({ generatedSnap });
 
-    expect(spyDao.calledOnceWithExactly(generatedSnap)).to.be.true;
-    expect(spyEventBus.calledOnceWithExactly(new SnapCreatedEvent(createdSnap))).to.be.true;
+    expect(spy.calledOnceWithExactly(new SnapCreatedEvent(createdSnap))).to.be.true;
   }
 );
 
-createSnapCommandHandlerUnitSuite.run();
+CreateSnapCommandHandlerUnitSuite.run();

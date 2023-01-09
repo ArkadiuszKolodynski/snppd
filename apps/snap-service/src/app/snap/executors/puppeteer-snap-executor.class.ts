@@ -27,8 +27,9 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
 
   constructor() {
     this.logger = new Logger(PuppeteerSnapExecutor.name);
-    // @ts-expect-error Bad TS typings
+    // @ts-expect-error: bad typings of used packages
     this.purifier = DOMPurify(new JSDOM('').window);
+    this.purifier.setConfig({ WHOLE_DOCUMENT: true });
   }
 
   async generateSnap(url: string): Promise<SnapGenerationResult> {
@@ -43,7 +44,7 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
         page.screenshot({ fullPage: true, omitBackground: true }),
       ]);
       const article = this.extractArticle(htmlContent, url);
-      const title = article.title || (await page.title());
+      const title = article?.title || (await page.title());
       const textContent = await this.convertHtmlToText(htmlContent);
       // TODO: replace screenshotUrl with url from storage service
       const screenshotUrl = faker.image.imageUrl();
@@ -82,16 +83,16 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
     url: string
   ): SnapGenerationResult {
     return {
-      author: article.byline?.trim(),
-      content: this.purifier.sanitize(article.content)?.trim(),
-      excerpt: article.excerpt?.trim(),
+      author: article?.byline?.trim(),
+      content: this.purifier.sanitize(article?.content)?.trim(),
+      excerpt: article?.excerpt?.trim(),
       htmlContent: this.purifier.sanitize(htmlContent)?.trim(),
       // FIXME: after readability lib types will be fixed
       // lang: article.lang,
-      lang: article['lang'],
-      length: article.length,
+      lang: article && article['lang'],
+      length: article?.length,
       screenshotUrl,
-      snapImageUrl: this.getSnapImage(article.content) || screenshotUrl,
+      snapImageUrl: this.getSnapImage(article?.content) || screenshotUrl,
       textContent: textContent?.trim(),
       title,
       url,

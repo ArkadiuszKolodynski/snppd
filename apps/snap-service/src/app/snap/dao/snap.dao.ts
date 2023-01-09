@@ -32,8 +32,8 @@ export class SnapDao {
     //   where: { deletedAt: { lte: subDays(new Date(), this.PRUNE_SNAPS_DELAY_IN_DAYS) } },
     // });
     const delay = subDays(new Date(), this.PRUNE_SNAPS_DELAY_IN_DAYS);
-    return this.prismaService.$queryRaw<
-      Snap[]
-    >`DELETE FROM "public"."Snap" WHERE "deletedAt" <= TO_TIMESTAMP(${delay.getTime()} / 1000.0) RETURNING "id"`;
+    return this.prismaService.$queryRaw<Snap[]>(
+      Prisma.sql`DELETE FROM "public"."Snap" WHERE "deletedAt" <= TO_TIMESTAMP(${delay.getTime()} / 1000.0) RETURNING "id"`
+    );
   }
 }

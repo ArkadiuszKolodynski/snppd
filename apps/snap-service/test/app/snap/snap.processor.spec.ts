@@ -1,116 +1,80 @@
 import { faker } from '@faker-js/faker';
-import { INestApplication } from '@nestjs/common';
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { Job } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { GenerateSnapCommand } from '../../../src/app/snap/commands/impl/generate-snap.command';
+import { PruneSnapsCommand } from '../../../src/app/snap/commands/impl/prune-snaps.command';
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
-import { SnapExecutor } from '../../../src/app/snap/executors';
 import { SnapProcessor } from '../../../src/app/snap/snap.processor';
 
-const generateSnapUnitSuite = suite<{
-  app: INestApplication;
-  eventBus: EventBus;
-  processor: SnapProcessor;
-  snapExecutor: SnapExecutor;
-}>('Generate Snap - unit');
+const SnapProcessorUnitSuite = suite<{ commandBus: CommandBus; processor: SnapProcessor }>('SnapProcessor - unit');
 
-generateSnapUnitSuite.before(async (context) => {
-  try {
-    const module = await Test.createTestingModule({
-      providers: [
-        SnapProcessor,
-        { provide: CommandBus, useValue: { execute: () => null } },
-        { provide: EventBus, useValue: { publish: () => null } },
-        {
-          provide: SnapExecutor,
-          useValue: {
-            generateSnap: () => ({
-              imageBuffer: Buffer.from(faker.datatype.string(), 'utf-8'),
-              title: faker.lorem.words(3),
-              htmlContent: faker.lorem.paragraphs(2),
-              textContent: faker.lorem.paragraphs(2),
-            }),
-          },
-        },
-      ],
-    }).compile();
+SnapProcessorUnitSuite.before(async (context) => {
+  const module = await Test.createTestingModule({
+    providers: [CommandBus, SnapProcessor],
+  })
+    .overrideProvider(CommandBus)
+    .useValue({ execute: () => null })
+    .compile();
 
-    context.eventBus = module.get(EventBus);
-    context.processor = module.get(SnapProcessor);
-    context.snapExecutor = module.get(SnapExecutor);
-  } catch (err) {
-    console.error(err);
-  }
+  context.commandBus = module.get(CommandBus);
+  context.processor = module.get(SnapProcessor);
 });
 
-generateSnapUnitSuite.after.each(() => {
+SnapProcessorUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-generateSnapUnitSuite('should log job info on active', async ({ processor }) => {
+SnapProcessorUnitSuite('should log job info on active', async ({ processor }) => {
   const loggerStub = sinon.stub(processor['logger'], 'log');
-  const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapDto>;
+  const tags = [faker.word.noun(), faker.word.noun()];
+  const userId = faker.datatype.uuid();
+  const job = { data: { generateSnapDto: { tags, url }, userId } } as Job<{
+    generateSnapDto: GenerateSnapDto;
+    userId: string;
+  }>;
 
   processor.onActive(job);
 
-  expect(loggerStub.calledOnceWith(sinon.match(job.data.name))).to.be.true;
+  expect(loggerStub.calledOnceWith(sinon.match(JSON.stringify(job.data)))).to.be.true;
 });
 
-generateSnapUnitSuite('should log error on failed', async ({ processor }) => {
+SnapProcessorUnitSuite('should log error on failed', async ({ processor }) => {
   const loggerStub = sinon.stub(processor['logger'], 'error');
-  const name = faker.lorem.words(3);
   const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapDto>;
+  const tags = [faker.word.noun(), faker.word.noun()];
+  const userId = faker.datatype.uuid();
+  const job = { data: { generateSnapDto: { tags, url }, userId } } as Job<{
+    generateSnapDto: GenerateSnapDto;
+    userId: string;
+  }>;
 
   processor.onFailed(job, new Error('Something went wrong'));
 
-  expect(loggerStub.calledOnceWith(sinon.match(job.data.name))).to.be.true;
+  expect(loggerStub.calledOnceWith(sinon.match(JSON.stringify(job.data)))).to.be.true;
 });
 
-generateSnapUnitSuite('should call Snapper.generateSnap method', async ({ processor, snapExecutor: snapper }) => {
-  const spy = sinon.spy(snapper, 'generateSnap');
-  const name = faker.lorem.words(3);
-  const url = faker.internet.url();
-  const job = { data: { name, url } } as Job<GenerateSnapDto>;
+SnapProcessorUnitSuite('#generateSnap should call CommandBus.execute method', async ({ commandBus, processor }) => {
+  const spy = sinon.spy(commandBus, 'execute');
+  const generateSnapDto: GenerateSnapDto = { tags: [faker.word.noun(), faker.word.noun()], url: faker.internet.url() };
+  const userId = faker.datatype.uuid();
+  const job = { data: { generateSnapDto, userId } } as Job<{ generateSnapDto: GenerateSnapDto; userId: string }>;
 
   await processor.generateSnap(job);
 
-  expect(spy.calledOnceWithExactly(url)).to.be.true;
+  expect(spy.calledOnceWithExactly(new GenerateSnapCommand(generateSnapDto, userId))).to.be.true;
 });
 
-generateSnapUnitSuite(
-  'should call EventBus.publish method with SnapGeneratedEvent if snap was generated successfully',
-  async ({ processor, eventBus }) => {
-    const spy = sinon.spy(eventBus, 'publish');
-    const name = faker.lorem.words(3);
-    const url = faker.internet.url();
-    const job = { data: { name, url } } as Job<GenerateSnapDto>;
+SnapProcessorUnitSuite('#pruneSnaps should call CommandBus.execute method', async ({ commandBus, processor }) => {
+  const spy = sinon.spy(commandBus, 'execute');
 
-    await processor.generateSnap(job);
+  await processor.pruneSnaps();
 
-    expect(spy.calledOnceWith(sinon.match.instanceOf(SnapGeneratedEvent))).to.be.true;
-  }
-);
+  expect(spy.calledOnceWithExactly(new PruneSnapsCommand())).to.be.true;
+});
 
-generateSnapUnitSuite(
-  'should call EventBus.publish method with SnapFailureEvent if snap was not generated',
-  async ({ processor, eventBus, snapExecutor }) => {
-    sinon.stub(snapExecutor, 'generateSnap').resolves(null);
-    const spy = sinon.spy(eventBus, 'publish');
-    const name = faker.lorem.words(3);
-    const url = faker.internet.url();
-    const job = { data: { name, url } } as Job<GenerateSnapDto>;
-
-    await processor.generateSnap(job);
-
-    expect(spy.calledOnceWith(sinon.match.instanceOf(SnapFailureEvent))).to.be.true;
-  }
-);
-
-generateSnapUnitSuite.run();
+SnapProcessorUnitSuite.run();
