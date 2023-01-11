@@ -1,3 +1,5 @@
+import { GenerateSnapDto } from '../../dto';
+
 export class GenerateSnapCommand {
-  constructor(public readonly name: string, public readonly url: string, public readonly tags: string[]) {}
+  constructor(public readonly generateSnapDto: GenerateSnapDto, public readonly userId: string) {}
 }

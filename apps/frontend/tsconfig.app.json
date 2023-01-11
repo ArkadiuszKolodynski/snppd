@@ -1,11 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
-    "composite": true,
-    "declaration": true,
-    "types": ["svelte"]
+    "outDir": "../../dist/out-tsc"
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.spec.ts", "**/*_spec.ts", "public/*", "jest.config.ts"]
+  "exclude": ["**/*.spec.ts", "**/*_spec.ts", "public/*"]
 }

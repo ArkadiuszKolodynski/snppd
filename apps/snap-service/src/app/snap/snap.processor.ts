@@ -1,39 +1,29 @@
-import { faker } from '@faker-js/faker';
 import { OnQueueActive, OnQueueFailed, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
-import { EventBus } from '@nestjs/cqrs';
-import { GenerateSnapJobPayload } from '@snppd/common';
-import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
+import { Logger } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { Job } from 'bull';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../constants';
-import { SnapExecutor } from './executors';
+import { GENERATE_SNAP_JOB, PRUNE_SNAPS_JOB, SNAP_QUEUE_NAME } from '../constants';
+import { GenerateSnapCommand } from './commands/impl/generate-snap.command';
+import { PruneSnapsCommand } from './commands/impl/prune-snaps.command';
+import { GenerateSnapDto } from './dto';
 
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
   // TODO: provide custom logger
   private readonly logger = new Logger(SnapProcessor.name);
 
-  constructor(private readonly eventBus: EventBus, @Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
-  @Process(GENERATE_SNAP)
-  async generateSnap(job: Job<GenerateSnapJobPayload>): Promise<void> {
-    this.logger.debug('Generating new snap...');
-    this.logger.debug(job.data);
-    const { name, url, tags } = job.data;
-    // TODO: pass imageBuffer to storage service and return public url
-    const generatedSnap = await this.snapExecutor.generateSnap(url);
-    if (generatedSnap) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { imageBuffer, htmlContent, textContent, title } = generatedSnap;
-      this.logger.debug('Generating snap completed!');
-      // TODO: replace imageUrl with url from storage service
-      this.eventBus.publish(
-        new SnapGeneratedEvent({ name, url, title, tags, imageUrl: faker.internet.url(), htmlContent, textContent })
-      );
-    } else {
-      this.logger.debug('Generating snap failure!');
-      this.eventBus.publish(new SnapFailureEvent({ name, url }));
-    }
+  @Process(GENERATE_SNAP_JOB)
+  async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {
+    this.logger.debug('Generating snap...');
+    await this.commandBus.execute(new GenerateSnapCommand(job.data.generateSnapDto, job.data.userId));
+  }
+
+  @Process(PRUNE_SNAPS_JOB)
+  async pruneSnaps(): Promise<void> {
+    this.logger.debug('Pruning snaps...');
+    await this.commandBus.execute(new PruneSnapsCommand());
   }
 
   @OnQueueActive()

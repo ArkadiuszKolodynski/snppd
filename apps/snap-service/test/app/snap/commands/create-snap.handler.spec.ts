@@ -1,48 +1,87 @@
 import { faker } from '@faker-js/faker';
-import { INestApplication } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { GeneratedSnap } from '@snppd/common';
+import { Snap } from '@prisma/client';
+import { GeneratedSnap } from '@snppd/shared';
+import { SnapCreatedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { CreateSnapHandler } from '../../../../src/app/snap/commands/handlers/create-snap.handler';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
-const createSnapCommandHandlerUnitSuite = suite<{ app: INestApplication; dao: SnapDao; handler: CreateSnapHandler }>(
-  'Create Snap Command Handler - unit'
-);
+const CreateSnapCommandHandlerUnitSuite = suite<{
+  createdSnap: Snap;
+  dao: SnapDao;
+  eventBus: EventBus;
+  generatedSnap: GeneratedSnap;
+  handler: CreateSnapHandler;
+}>('CreateSnapHandler - unit');
 
-createSnapCommandHandlerUnitSuite.before(async (context) => {
+CreateSnapCommandHandlerUnitSuite.before(async (context) => {
+  const generatedSnap: GeneratedSnap = {
+    author: faker.name.fullName(),
+    content: faker.lorem.paragraph(),
+    excerpt: faker.lorem.sentences(),
+    htmlContent: faker.lorem.paragraph(),
+    lang: faker.random.locale(),
+    length: faker.datatype.number(),
+    screenshotUrl: faker.image.imageUrl(),
+    snapImageUrl: faker.image.imageUrl(),
+    tags: [faker.word.noun(), faker.word.noun()],
+    textContent: faker.lorem.paragraph(),
+    title: faker.lorem.sentence(),
+    url: faker.internet.url(),
+    userId: faker.datatype.uuid(),
+  };
+
+  const createdSnap: Snap = {
+    ...generatedSnap,
+    id: faker.datatype.uuid(),
+    createdAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
+    deletedAt: null,
+  };
+
   const module = await Test.createTestingModule({
-    providers: [CreateSnapHandler, SnapDao],
+    providers: [CreateSnapHandler, EventBus, SnapDao],
   })
+    .overrideProvider(EventBus)
+    .useValue({ publish: () => null })
     .overrideProvider(SnapDao)
-    .useValue({ create: () => null })
+    .useValue({
+      create: () => createdSnap,
+    })
     .compile();
 
+  context.createdSnap = createdSnap;
   context.dao = module.get(SnapDao);
+  context.eventBus = module.get(EventBus);
+  context.generatedSnap = generatedSnap;
   context.handler = module.get(CreateSnapHandler);
 });
 
-createSnapCommandHandlerUnitSuite.after.each(() => {
+CreateSnapCommandHandlerUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-createSnapCommandHandlerUnitSuite('should call SnapDao.create method', async ({ dao, handler }) => {
+CreateSnapCommandHandlerUnitSuite('should call SnapDao.create method', async ({ dao, generatedSnap, handler }) => {
   const spy = sinon.spy(dao, 'create');
-  const generatedSnap: GeneratedSnap = {
-    name: faker.random.words(3),
-    url: faker.internet.url(),
-    tags: [faker.random.word(), faker.random.word()],
-    title: faker.lorem.sentence(3),
-    imageUrl: faker.internet.url(),
-    htmlContent: faker.lorem.paragraphs(2),
-    textContent: faker.lorem.paragraphs(2),
-  };
 
   await handler.execute({ generatedSnap });
 
   expect(spy.calledOnceWithExactly(generatedSnap)).to.be.true;
 });
 
-createSnapCommandHandlerUnitSuite.run();
+CreateSnapCommandHandlerUnitSuite(
+  'should publish SnapCreatedEvent',
+  async ({ createdSnap, eventBus, generatedSnap, handler }) => {
+    const spy = sinon.spy(eventBus, 'publish');
+
+    await handler.execute({ generatedSnap });
+
+    expect(spy.calledOnceWithExactly(new SnapCreatedEvent(createdSnap))).to.be.true;
+  }
+);
+
+CreateSnapCommandHandlerUnitSuite.run();

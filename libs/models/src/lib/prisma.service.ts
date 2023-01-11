@@ -1,5 +1,6 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { registerFindSnapMiddleware, registerLoggingMiddleware } from '../middlewares';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -12,10 +13,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
     await this.$connect();
 
-    this.$on('query' as never, async (event: Prisma.QueryEvent) => {
-      this.logger.debug(`(${event.duration}ms) ${event.query}`);
-      this.logger.debug(`Params: ${event.params}`);
-    });
+    registerLoggingMiddleware(this, this.logger);
+    registerFindSnapMiddleware(this);
   }
 
   async enableShutdownHooks(app: INestApplication) {

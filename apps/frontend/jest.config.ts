@@ -11,10 +11,10 @@ export default {
     '^(.+\\.svelte$)': [
       'svelte-jester',
       {
-        preprocess: 'apps/frontend/svelte.config.cjs',
+        preprocess: 'apps/frontend/svelte.config.js',
       },
     ],
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['svelte', 'ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/frontend',

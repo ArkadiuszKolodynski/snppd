@@ -1,44 +1,102 @@
 import { faker } from '@faker-js/faker';
-import { getQueueToken } from '@nestjs/bull';
-import { INestApplication } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { GenerateSnapJobPayload } from '@snppd/common';
-import { Queue } from 'bull';
+import { GeneratedSnap } from '@snppd/shared';
+import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../../../../src/app/constants';
 import { GenerateSnapHandler } from '../../../../src/app/snap/commands/handlers/generate-snap.handler';
+import { SnapExecutor } from '../../../../src/app/snap/executors';
 
-const generateSnapCommandHandlerUnitSuite = suite<{
-  app: INestApplication;
+const GenerateSnapCommandHandlerUnitSuite = suite<{
+  eventBus: EventBus;
+  executor: SnapExecutor;
+  generatedSnap: GeneratedSnap;
   handler: GenerateSnapHandler;
-  queue: Queue<GenerateSnapJobPayload>;
-}>('Generate Snap Command Handler - unit');
+}>('GenerateSnapHandler - unit');
 
-generateSnapCommandHandlerUnitSuite.before(async (context) => {
-  const queueToken = getQueueToken(SNAP_QUEUE_NAME);
+GenerateSnapCommandHandlerUnitSuite.before(async (context) => {
+  const generatedSnap: GeneratedSnap = {
+    author: faker.name.fullName(),
+    content: faker.lorem.paragraph(),
+    excerpt: faker.lorem.sentences(),
+    htmlContent: faker.lorem.paragraph(),
+    lang: faker.random.locale(),
+    length: faker.datatype.number(),
+    screenshotUrl: faker.image.imageUrl(),
+    snapImageUrl: faker.image.imageUrl(),
+    tags: [faker.word.noun(), faker.word.noun()],
+    textContent: faker.lorem.paragraph(),
+    title: faker.lorem.sentence(),
+    url: faker.internet.url(),
+    userId: faker.datatype.uuid(),
+  };
+
   const module = await Test.createTestingModule({
-    providers: [GenerateSnapHandler, { provide: queueToken, useValue: { add: () => null } }],
-  }).compile();
+    providers: [
+      GenerateSnapHandler,
+      EventBus,
+      { provide: SnapExecutor, useValue: { generateSnap: () => generatedSnap } },
+    ],
+  })
+    .overrideProvider(EventBus)
+    .useValue({ publish: () => null })
+    .compile();
 
+  context.eventBus = module.get(EventBus);
+  context.executor = module.get(SnapExecutor);
+  context.generatedSnap = generatedSnap;
   context.handler = module.get(GenerateSnapHandler);
-  context.queue = module.get(queueToken);
 });
 
-generateSnapCommandHandlerUnitSuite.after.each(() => {
+GenerateSnapCommandHandlerUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-generateSnapCommandHandlerUnitSuite('should call Queue.add method', async ({ handler, queue }) => {
-  const spy = sinon.spy(queue, 'add');
-  const name = faker.random.words(3);
-  const url = faker.internet.url();
-  const tags = [faker.random.word(), faker.random.word()];
+GenerateSnapCommandHandlerUnitSuite(
+  'should call SnapExecutor.generateSnap method',
+  async ({ executor, generatedSnap, handler }) => {
+    const spy = sinon.spy(executor, 'generateSnap');
 
-  await handler.execute({ name, url, tags });
+    await handler.execute({
+      generateSnapDto: { tags: generatedSnap.tags, url: generatedSnap.url },
+      userId: generatedSnap.userId,
+    });
 
-  expect(spy.calledOnceWithExactly(GENERATE_SNAP, { name, url, tags })).to.be.true;
-});
+    expect(spy.calledOnceWithExactly(generatedSnap.url)).to.be.true;
+  }
+);
 
-generateSnapCommandHandlerUnitSuite.run();
+GenerateSnapCommandHandlerUnitSuite(
+  'should publish SnapGeneratedEvent if snap was generated',
+  async ({ eventBus, executor, generatedSnap, handler }) => {
+    sinon.stub(executor, 'generateSnap').resolves(generatedSnap);
+    const spy = sinon.spy(eventBus, 'publish');
+
+    await handler.execute({
+      generateSnapDto: { tags: generatedSnap.tags, url: generatedSnap.url },
+      userId: generatedSnap.userId,
+    });
+
+    expect(spy.calledOnceWithExactly(new SnapGeneratedEvent(generatedSnap))).to.be.true;
+  }
+);
+
+GenerateSnapCommandHandlerUnitSuite(
+  'should publish SnapFailureEvent if there was an error while generating snap',
+  async ({ eventBus, executor, generatedSnap, handler }) => {
+    sinon.stub(executor, 'generateSnap').resolves(null);
+    const spy = sinon.spy(eventBus, 'publish');
+
+    await handler.execute({
+      generateSnapDto: { tags: generatedSnap.tags, url: generatedSnap.url },
+      userId: generatedSnap.userId,
+    });
+
+    expect(spy.calledOnceWithExactly(new SnapFailureEvent({ url: generatedSnap.url, userId: generatedSnap.userId }))).to
+      .be.true;
+  }
+);
+
+GenerateSnapCommandHandlerUnitSuite.run();

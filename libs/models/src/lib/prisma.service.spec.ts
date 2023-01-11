@@ -10,7 +10,7 @@ PrismaServiceSuite.before(async (context) => {
     providers: [PrismaService],
   }).compile();
 
-  context.service = app.get<PrismaService>(PrismaService);
+  context.service = app.get(PrismaService);
 });
 
 PrismaServiceSuite('service should be an instance of PrismaService', ({ service }) => {

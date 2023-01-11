@@ -1,15 +1,25 @@
-import { InjectQueue } from '@nestjs/bull';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { GenerateSnapJobPayload } from '@snppd/common';
-import { Queue } from 'bull';
-import { GENERATE_SNAP, SNAP_QUEUE_NAME } from '../../../constants';
+import { Inject, Logger } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
+import { SnapExecutor } from '../../executors';
 import { GenerateSnapCommand } from '../impl/generate-snap.command';
 
 @CommandHandler(GenerateSnapCommand)
 export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand> {
-  constructor(@InjectQueue(SNAP_QUEUE_NAME) private readonly snapQueue: Queue<GenerateSnapJobPayload>) {}
+  // TODO: provide custom logger
+  private readonly logger = new Logger(GenerateSnapHandler.name);
 
-  async execute({ name, url, tags }: GenerateSnapCommand): Promise<void> {
-    await this.snapQueue.add(GENERATE_SNAP, { name, url, tags });
+  constructor(@Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor, private readonly eventBus: EventBus) {}
+
+  async execute({ generateSnapDto, userId }: GenerateSnapCommand): Promise<void> {
+    const { tags, url } = generateSnapDto;
+    const generatedSnap = await this.snapExecutor.generateSnap(url);
+    if (generatedSnap) {
+      this.logger.debug('Generating snap completed!');
+      this.eventBus.publish(new SnapGeneratedEvent({ ...generatedSnap, tags, url, userId }));
+    } else {
+      this.logger.debug('Generating snap failure!');
+      this.eventBus.publish(new SnapFailureEvent({ url, userId }));
+    }
   }
 }

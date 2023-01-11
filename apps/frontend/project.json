@@ -1,41 +1,22 @@
 {
+  "name": "frontend",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/frontend/src",
   "projectType": "application",
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nxext/vite:build",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
       "options": {
-        "frameworkConfigFile": "@nxext/svelte/plugins/vite",
-        "outputPath": "dist/apps/frontend",
-        "assets": [
-          {
-            "glob": "/*",
-            "input": "./public/**",
-            "output": "./"
-          }
-        ],
-        "tsConfig": "apps/frontend/tsconfig.app.json"
-      },
-      "configurations": {
-        "production": {}
+        "commands": ["vite build"],
+        "cwd": "apps/frontend"
       }
     },
     "serve": {
-      "executor": "@nxext/vite:dev",
+      "executor": "nx:run-commands",
       "options": {
-        "frameworkConfigFile": "@nxext/svelte/plugins/vite",
-        "outputPath": "dist/apps/frontend",
-        "assets": [
-          {
-            "glob": "/*",
-            "input": "./public/**",
-            "output": "./"
-          }
-        ],
-        "tsConfig": "apps/frontend/tsconfig.app.json"
+        "commands": ["vite"],
+        "cwd": "apps/frontend"
       }
     },
     "lint": {
@@ -54,7 +35,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/apps/frontend"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "apps/frontend/jest.config.ts",
         "passWithNoTests": true

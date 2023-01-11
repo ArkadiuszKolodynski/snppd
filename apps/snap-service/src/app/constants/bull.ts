@@ -1,2 +1,6 @@
+// queues
 export const SNAP_QUEUE_NAME = 'snap-queue';
-export const GENERATE_SNAP = 'generate-snap';
+
+// jobs
+export const GENERATE_SNAP_JOB = 'generate-snap';
+export const PRUNE_SNAPS_JOB = 'prune-snaps';
