@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { SnapCreatedEvent } from '@snppd/events';
-import { WebSocketService } from '../websockets/websocket.service';
+import { WebSocketService } from '@snppd/websockets';
 
 @EventsHandler(SnapCreatedEvent)
 export class SnapCreatedHandler implements IEventHandler<SnapCreatedEvent> {

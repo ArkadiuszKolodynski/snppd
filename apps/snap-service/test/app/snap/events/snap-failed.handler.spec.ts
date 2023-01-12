@@ -2,11 +2,11 @@ import { faker } from '@faker-js/faker';
 import { Test } from '@nestjs/testing';
 import { SnapFailedEvent } from '@snppd/events';
 import { FailedSnap } from '@snppd/shared';
+import { WebSocketService } from '@snppd/websockets';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { SnapFailedHandler } from '../../../../src/app/snap/events/snap-failed.handler';
-import { WebSocketService } from '../../../../src/app/snap/websockets/websocket.service';
 
 const SnapFailedEventHandlerUnitSuite = suite<{
   failedSnap: FailedSnap;

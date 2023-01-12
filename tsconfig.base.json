@@ -17,7 +17,8 @@
     "paths": {
       "@snppd/events": ["libs/events/src/index.ts"],
       "@snppd/models": ["libs/models/src/index.ts"],
-      "@snppd/shared": ["libs/shared/src/index.ts"]
+      "@snppd/shared": ["libs/shared/src/index.ts"],
+      "@snppd/websockets": ["libs/websockets/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

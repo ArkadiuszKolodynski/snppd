@@ -2,11 +2,11 @@ import { faker } from '@faker-js/faker';
 import { Test } from '@nestjs/testing';
 import { Snap } from '@prisma/client';
 import { SnapCreatedEvent } from '@snppd/events';
+import { WebSocketService } from '@snppd/websockets';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { SnapCreatedHandler } from '../../../../src/app/snap/events/snap-created.handler';
-import { WebSocketService } from '../../../../src/app/snap/websockets/websocket.service';
 
 const SnapCreatedEventHandlerUnitSuite = suite<{
   createdSnap: Snap;

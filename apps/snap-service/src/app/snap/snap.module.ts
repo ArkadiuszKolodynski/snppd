@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { WebSocketsModule } from '@snppd/websockets';
 import { SNAP_QUEUE_NAME } from '../constants';
 import { CommandHandlers } from './commands/handlers';
 import { SnapDao } from './dao/snap.dao';
@@ -11,10 +12,9 @@ import { SnapSagas } from './sagas/snap.sagas';
 import { SnapController } from './snap.controller';
 import { SnapProcessor } from './snap.processor';
 import { SnapService } from './snap.service';
-import { WebSocketService } from './websockets/websocket.service';
 
 @Module({
-  imports: [BullModule.registerQueue({ name: SNAP_QUEUE_NAME }), CqrsModule],
+  imports: [BullModule.registerQueue({ name: SNAP_QUEUE_NAME }), CqrsModule, WebSocketsModule],
   controllers: [SnapController],
   providers: [
     SnapDao,
@@ -22,7 +22,6 @@ import { WebSocketService } from './websockets/websocket.service';
     SnapSagas,
     SnapService,
     { provide: SnapExecutor, useClass: PuppeteerSnapExecutor },
-    WebSocketService,
     ...CommandHandlers,
     ...EventHandlers,
     ...QueryHandlers,
