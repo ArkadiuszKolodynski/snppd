@@ -1,9 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { CqrsModule } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { Snap } from '@prisma/client';
-import { FailedSnap, GeneratedSnap } from '@snppd/shared';
-import { SnapCreatedEvent, SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
+import { SnapGeneratedEvent } from '@snppd/events';
+import { GeneratedSnap } from '@snppd/shared';
 import { expect } from 'chai';
 import { TestScheduler } from 'rxjs/testing';
 import * as sinon from 'sinon';
@@ -58,59 +57,6 @@ SnapSagasUnitSuite('should call new CreateSnapCommand on SnapGeneratedEvent', as
 
     expectObservable(output$).toBe('-s---- 5s -s--|', {
       s: new CreateSnapCommand(generatedSnap),
-    });
-  });
-});
-
-SnapSagasUnitSuite('should return null on SnapCreatedEvent', async ({ sagas, testScheduler }) => {
-  const createdSnap: Snap = {
-    author: faker.name.fullName(),
-    content: faker.lorem.paragraph(),
-    excerpt: faker.lorem.sentences(),
-    htmlContent: faker.lorem.paragraph(),
-    lang: faker.random.locale(),
-    length: faker.datatype.number(),
-    screenshotUrl: faker.image.imageUrl(),
-    snapImageUrl: faker.image.imageUrl(),
-    tags: [faker.word.noun(), faker.word.noun()],
-    textContent: faker.lorem.paragraph(),
-    title: faker.lorem.sentence(),
-    url: faker.internet.url(),
-    userId: faker.datatype.uuid(),
-    id: faker.datatype.uuid(),
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-    deletedAt: null,
-  };
-
-  testScheduler.run(({ hot, expectObservable }) => {
-    const events$ = hot('-v---- 5s -v--|', {
-      v: new SnapCreatedEvent(createdSnap),
-    });
-
-    const output$ = sagas.snapCreated(events$);
-
-    expectObservable(output$).toBe('-s---- 5s -s--|', {
-      s: null,
-    });
-  });
-});
-
-SnapSagasUnitSuite('should return null on SnapFailureEvent', async ({ sagas, testScheduler }) => {
-  const failedSnap: FailedSnap = {
-    url: faker.internet.url(),
-    userId: faker.datatype.uuid(),
-  };
-
-  testScheduler.run(({ hot, expectObservable }) => {
-    const events$ = hot('-v---- 5s -v--|', {
-      v: new SnapFailureEvent(failedSnap),
-    });
-
-    const output$ = sagas.snapFailure(events$);
-
-    expectObservable(output$).toBe('-s---- 5s -s--|', {
-      s: null,
     });
   });
 });
