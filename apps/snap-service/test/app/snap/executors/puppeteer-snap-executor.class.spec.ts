@@ -107,7 +107,6 @@ PuppeteerSnapExecutorUnitSuite('should return snap and close the browser', async
   const url = faker.internet.url();
 
   const result = await snapExecutor.generateSnap(url);
-  console.log(result);
 
   expect(result).to.exist;
   expect(browserStub.close.calledOnce).to.be.true;

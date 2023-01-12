@@ -1,0 +1,25 @@
+{
+  "name": "websockets",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/websockets/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/websockets/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "nx-uvu:uvu",
+      "outputs": ["{workspaceRoot}/coverage/libs/websockets"],
+      "options": {
+        "rootDir": "libs/websockets/test",
+        "coverage": true,
+        "typescript": true
+      }
+    }
+  },
+  "tags": []
+}

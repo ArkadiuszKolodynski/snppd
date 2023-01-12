@@ -1,6 +1,6 @@
 import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
+import { SnapFailedEvent, SnapGeneratedEvent } from '@snppd/events';
 import { SnapExecutor } from '../../executors';
 import { GenerateSnapCommand } from '../impl/generate-snap.command';
 
@@ -18,8 +18,8 @@ export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand>
       this.logger.debug('Generating snap completed!');
       this.eventBus.publish(new SnapGeneratedEvent({ ...generatedSnap, tags, url, userId }));
     } else {
-      this.logger.debug('Generating snap failure!');
-      this.eventBus.publish(new SnapFailureEvent({ url, userId }));
+      this.logger.debug('Generating snap failed!');
+      this.eventBus.publish(new SnapFailedEvent({ url, userId }));
     }
   }
 }

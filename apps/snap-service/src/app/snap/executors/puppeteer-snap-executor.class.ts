@@ -27,7 +27,7 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
 
   constructor() {
     this.logger = new Logger(PuppeteerSnapExecutor.name);
-    // @ts-expect-error: bad typings of used packages
+    // @ts-expect-error: inconsistent typings between used packages
     this.purifier = DOMPurify(new JSDOM('').window);
     this.purifier.setConfig({ WHOLE_DOCUMENT: true });
   }
@@ -53,7 +53,7 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
       this.logger.error(err.message, err.stack);
       return null;
     } /* c8 ignore next */ finally {
-      await browser.close();
+      await browser?.close();
     }
   }
 

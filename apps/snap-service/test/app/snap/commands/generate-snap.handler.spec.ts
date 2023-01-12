@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { SnapFailedEvent, SnapGeneratedEvent } from '@snppd/events';
 import { GeneratedSnap } from '@snppd/shared';
-import { SnapFailureEvent, SnapGeneratedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
@@ -84,7 +84,7 @@ GenerateSnapCommandHandlerUnitSuite(
 );
 
 GenerateSnapCommandHandlerUnitSuite(
-  'should publish SnapFailureEvent if there was an error while generating snap',
+  'should publish SnapFailedEvent if there was an error while generating snap',
   async ({ eventBus, executor, generatedSnap, handler }) => {
     sinon.stub(executor, 'generateSnap').resolves(null);
     const spy = sinon.spy(eventBus, 'publish');
@@ -94,7 +94,7 @@ GenerateSnapCommandHandlerUnitSuite(
       userId: generatedSnap.userId,
     });
 
-    expect(spy.calledOnceWithExactly(new SnapFailureEvent({ url: generatedSnap.url, userId: generatedSnap.userId }))).to
+    expect(spy.calledOnceWithExactly(new SnapFailedEvent({ url: generatedSnap.url, userId: generatedSnap.userId }))).to
       .be.true;
   }
 );
