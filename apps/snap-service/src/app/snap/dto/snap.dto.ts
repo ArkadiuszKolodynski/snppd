@@ -4,53 +4,53 @@ import { Snap } from '@prisma/client';
 
 export class SnapDto implements Snap {
   @ApiProperty({ format: 'uuid' })
-  id: string;
+  readonly id: string;
 
   @ApiProperty({ format: 'uuid' })
-  userId: string;
+  readonly userId: string;
 
   @ApiProperty({ example: faker.internet.url() })
-  url: string;
+  readonly url: string;
 
   @ApiProperty({ example: [faker.word.noun(), faker.word.noun()] })
-  tags: string[];
+  readonly tags: string[];
 
   @ApiProperty({ example: faker.lorem.sentence(4) })
-  title: string;
+  readonly title: string;
 
   @ApiPropertyOptional({ example: faker.name.fullName() })
-  author: string | null;
+  readonly author: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  content: string | null;
+  readonly content: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  textContent: string | null;
+  readonly textContent: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  htmlContent: string | null;
+  readonly htmlContent: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.sentence() })
-  excerpt: string | null;
+  readonly excerpt: string | null;
 
   @ApiPropertyOptional({ example: faker.datatype.number() })
-  length: number | null;
+  readonly length: number | null;
 
   @ApiPropertyOptional({ example: faker.random.locale() })
-  lang: string | null;
+  readonly lang: string | null;
 
   @ApiPropertyOptional({ example: faker.image.imageUrl() })
-  screenshotUrl: string;
+  readonly screenshotUrl: string;
 
   @ApiPropertyOptional({ example: faker.image.imageUrl() })
-  snapImageUrl: string;
+  readonly snapImageUrl: string;
 
   @ApiProperty()
-  createdAt: Date;
+  readonly createdAt: Date;
 
   @ApiPropertyOptional()
-  updatedAt: Date | null;
+  readonly updatedAt: Date | null;
 
   @ApiPropertyOptional()
-  deletedAt: Date | null;
+  readonly deletedAt: Date | null;
 }
