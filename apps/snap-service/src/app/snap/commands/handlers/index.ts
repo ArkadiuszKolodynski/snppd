@@ -4,6 +4,7 @@ import { EnqueueSnapGenerationHandler } from './enqueue-snap-generation.handler'
 import { GenerateSnapHandler } from './generate-snap.handler';
 import { PruneSnapsHandler } from './prune-snaps.handler';
 import { ScheduleSnapsPruneHandler } from './schedule-snaps-prune.handler';
+import { UpdateSnapHandler } from './update-snap.handler';
 
 export const CommandHandlers = [
   CreateSnapHandler,
@@ -12,4 +13,5 @@ export const CommandHandlers = [
   GenerateSnapHandler,
   ScheduleSnapsPruneHandler,
   DeleteSnapHandler,
+  UpdateSnapHandler,
 ];

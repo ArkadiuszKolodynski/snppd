@@ -51,6 +51,18 @@ SnapDaoUnitSuite('#create should call PrismaService.snap.create method', async (
   expect(spy.calledOnceWithExactly({ data })).to.be.true;
 });
 
+SnapDaoUnitSuite('#update should call PrismaService.snap.update method', async ({ dao, service }) => {
+  const spy = sinon.spy(service.snap, 'update');
+  const id = faker.datatype.uuid();
+  const data: Prisma.SnapUpdateInput = {
+    tags: [faker.random.word(), faker.random.word()],
+  };
+
+  await dao.update(id, data);
+
+  expect(spy.calledOnceWithExactly({ where: { id }, data })).to.be.true;
+});
+
 SnapDaoUnitSuite('#delete should call PrismaService.snap.update method', async ({ dao, service }) => {
   const spy = sinon.spy(service.snap, 'update');
   const id = faker.datatype.uuid();

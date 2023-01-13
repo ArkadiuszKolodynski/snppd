@@ -1,12 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayUnique, IsArray, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { ArrayUnique, IsArray, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class GenerateSnapDto {
-  @ApiProperty({ description: 'URL to snap', example: faker.internet.url() })
-  @IsUrl()
-  readonly url: string;
-
+export class UpdateSnapDto {
   @ApiProperty({ description: 'Snap tags', isArray: true, example: [faker.random.word(), faker.random.word()] })
   @IsArray()
   @ArrayUnique()

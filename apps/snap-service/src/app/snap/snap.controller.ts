@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import { v4 } from 'uuid';
 import { GenerateSnapDto } from './dto';
+import { UpdateSnapDto } from './dto/update-snap.dto';
 import { SnapService } from './snap.service';
 
 @Controller('snaps')
@@ -16,6 +17,15 @@ export class SnapController {
     // TODO: get userId from request
     const userId = v4();
     return this.snapService.generate(generateSnapDto, userId);
+  }
+
+  @Patch(':id')
+  @ApiOkResponse()
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateSnapDto: UpdateSnapDto): Promise<void> {
+    // TODO: get userId from request
+    const userId = v4();
+    return this.snapService.update(id, updateSnapDto, userId);
   }
 
   @Delete(':id')

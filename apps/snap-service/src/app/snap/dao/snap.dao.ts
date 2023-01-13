@@ -16,6 +16,10 @@ export class SnapDao {
     return this.prismaService.snap.create({ data });
   }
 
+  update(id: string, data: Prisma.SnapUpdateInput): Promise<Snap> {
+    return this.prismaService.snap.update({ where: { id }, data });
+  }
+
   // FIXME: https://github.com/prisma/prisma/issues/10142
   async delete(id: string): Promise<Snap> {
     // return this.prismaService.snap.update({ where: { id }, data: { deletedAt: new Date() } });
