@@ -8,10 +8,10 @@ import { UpdateSnapHandler } from './update-snap.handler';
 
 export const CommandHandlers = [
   CreateSnapHandler,
-  PruneSnapsHandler,
+  DeleteSnapHandler,
   EnqueueSnapGenerationHandler,
   GenerateSnapHandler,
+  PruneSnapsHandler,
   ScheduleSnapsPruneHandler,
-  DeleteSnapHandler,
   UpdateSnapHandler,
 ];
