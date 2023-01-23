@@ -15,7 +15,7 @@
       "executor": "nx-uvu:uvu",
       "outputs": ["{workspaceRoot}/coverage/libs/models"],
       "options": {
-        "rootDir": "libs/models/src",
+        "rootDir": "libs/models/test",
         "coverage": true,
         "typescript": true
       }

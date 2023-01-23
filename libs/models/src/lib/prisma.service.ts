@@ -1,6 +1,6 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { registerFindSnapMiddleware, registerLoggingMiddleware } from '../middlewares';
+import { registerFindSnapMiddleware, registerQueryLogMiddleware } from './middlewares';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -13,7 +13,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
     await this.$connect();
 
-    registerLoggingMiddleware(this, this.logger);
+    registerQueryLogMiddleware(this, this.logger);
     registerFindSnapMiddleware(this);
   }
 

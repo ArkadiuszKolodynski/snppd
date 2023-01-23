@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../lib/prisma.service';
+import { PrismaService } from '../prisma.service';
 
 export function registerFindSnapMiddleware(prismaService: PrismaService) {
   prismaService.$use(async (params, next) => {
