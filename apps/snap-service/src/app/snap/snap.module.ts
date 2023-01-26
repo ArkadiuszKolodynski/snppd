@@ -5,7 +5,7 @@ import { WebSocketsModule } from '@snppd/websockets';
 import { SNAP_QUEUE_NAME } from '../constants';
 import { CommandHandlers } from './commands/handlers';
 import { SnapDao } from './dao/snap.dao';
-import { EventHandlers } from './events';
+import { EventHandlers } from './events/handlers';
 import { PuppeteerSnapExecutor, SnapExecutor } from './executors';
 import { QueryHandlers } from './queries/handlers';
 import { SnapSagas } from './sagas/snap.sagas';

@@ -1,13 +1,22 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
 import { v4 } from 'uuid';
-import { GenerateSnapDto } from './dto';
-import { UpdateSnapDto } from './dto/update-snap.dto';
+import { GenerateSnapDto, SnapResponseDto, UpdateSnapDto } from './dto';
 import { SnapService } from './snap.service';
 
 @Controller('snaps')
 export class SnapController {
   constructor(private readonly snapService: SnapService) {}
+
+  @Get(':id')
+  @ApiOkResponse({ type: SnapResponseDto })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  @ApiNotFoundResponse({ description: 'Snap not found' })
+  findById(@Param('id', ParseUUIDPipe) id: string): Promise<SnapResponseDto> {
+    // TODO: get userId from request
+    const userId = v4();
+    return this.snapService.findById(id, userId);
+  }
 
   @Post('generate')
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Snap } from '@prisma/client';
 
-export class SnapDto implements Snap {
+export class SnapResponseDto implements Snap {
   @ApiProperty({ format: 'uuid' })
   readonly id: string;
 

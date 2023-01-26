@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -10,9 +10,12 @@ import { ScheduleSnapsPruneCommand } from '../../../src/app/snap/commands/impl/s
 import { UpdateSnapCommand } from '../../../src/app/snap/commands/impl/update-snap.command';
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { UpdateSnapDto } from '../../../src/app/snap/dto/update-snap.dto';
+import { FindSnapByIdQuery } from '../../../src/app/snap/queries/impl/find-snap-by-id.command';
 import { SnapService } from '../../../src/app/snap/snap.service';
 
-const SnapServiceUnitSuite = suite<{ commandBus: CommandBus; service: SnapService }>('SnapService - unit');
+const SnapServiceUnitSuite = suite<{ commandBus: CommandBus; queryBus: QueryBus; service: SnapService }>(
+  'SnapService - unit'
+);
 
 SnapServiceUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
@@ -20,9 +23,12 @@ SnapServiceUnitSuite.before(async (context) => {
   })
     .overrideProvider(CommandBus)
     .useValue({ execute: () => null })
+    .overrideProvider(QueryBus)
+    .useValue({ execute: () => null })
     .compile();
 
   context.commandBus = module.get(CommandBus);
+  context.queryBus = module.get(QueryBus);
   context.service = module.get(SnapService);
 });
 
@@ -40,6 +46,16 @@ SnapServiceUnitSuite(
     expect(spy.calledOnceWithExactly(new ScheduleSnapsPruneCommand())).to.be.true;
   }
 );
+
+SnapServiceUnitSuite('#findById should call QueryBus.execute method', async ({ queryBus, service }) => {
+  const spy = sinon.spy(queryBus, 'execute');
+  const id = faker.datatype.uuid();
+  const userId = faker.datatype.uuid();
+
+  await service.findById(id, userId);
+
+  expect(spy.calledOnceWithExactly(new FindSnapByIdQuery(id, userId))).to.be.true;
+});
 
 SnapServiceUnitSuite('#generate should call CommandBus.execute method', async ({ commandBus, service }) => {
   const spy = sinon.spy(commandBus, 'execute');

@@ -12,6 +12,10 @@ export class SnapDao {
     this.PRUNE_SNAPS_DELAY_IN_DAYS = this.configService.get('PRUNE_SNAPS_DELAY_IN_DAYS') || 30;
   }
 
+  findById(id: string): Promise<Snap> {
+    return this.prismaService.snap.findUnique({ where: { id } });
+  }
+
   create(data: Prisma.SnapCreateInput): Promise<Snap> {
     return this.prismaService.snap.create({ data });
   }
