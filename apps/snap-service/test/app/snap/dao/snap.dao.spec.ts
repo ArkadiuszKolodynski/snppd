@@ -16,7 +16,7 @@ SnapDaoUnitSuite.before(async (context) => {
     providers: [SnapDao, PrismaService],
   })
     .overrideProvider(PrismaService)
-    .useValue({ snap: { create: () => null, update: () => undefined }, $queryRaw: () => null })
+    .useValue({ snap: { findUnique: () => null, create: () => null, update: () => undefined }, $queryRaw: () => null })
     .compile();
 
   context.dao = module.get(SnapDao);
@@ -25,6 +25,15 @@ SnapDaoUnitSuite.before(async (context) => {
 
 SnapDaoUnitSuite.after.each(() => {
   sinon.restore();
+});
+
+SnapDaoUnitSuite('#findById should call PrismaService.snap.findUnique method', async ({ dao, service }) => {
+  const spy = sinon.spy(service.snap, 'findUnique');
+  const id = faker.datatype.uuid();
+
+  await dao.findById(id);
+
+  expect(spy.calledOnceWith(sinon.match({ where: { id } }))).to.be.true;
 });
 
 SnapDaoUnitSuite('#create should call PrismaService.snap.create method', async ({ dao, service }) => {

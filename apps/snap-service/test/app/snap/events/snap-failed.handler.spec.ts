@@ -6,7 +6,7 @@ import { WebSocketService } from '@snppd/websockets';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { SnapFailedHandler } from '../../../../src/app/snap/events/snap-failed.handler';
+import { SnapFailedHandler } from '../../../../src/app/snap/events/handlers/snap-failed.handler';
 
 const SnapFailedEventHandlerUnitSuite = suite<{
   failedSnap: FailedSnap;
