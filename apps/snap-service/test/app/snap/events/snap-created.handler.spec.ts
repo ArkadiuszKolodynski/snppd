@@ -6,7 +6,7 @@ import { WebSocketService } from '@snppd/websockets';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { SnapCreatedHandler } from '../../../../src/app/snap/events/snap-created.handler';
+import { SnapCreatedHandler } from '../../../../src/app/snap/events/handlers/snap-created.handler';
 
 const SnapCreatedEventHandlerUnitSuite = suite<{
   createdSnap: Snap;
