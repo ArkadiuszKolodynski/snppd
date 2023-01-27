@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@snppd/models';
+import { PageOptionsDto } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
@@ -16,7 +17,17 @@ SnapDaoUnitSuite.before(async (context) => {
     providers: [SnapDao, PrismaService],
   })
     .overrideProvider(PrismaService)
-    .useValue({ snap: { findUnique: () => null, create: () => null, update: () => undefined }, $queryRaw: () => null })
+    .useValue({
+      snap: {
+        create: () => null,
+        count: () => null,
+        findMany: () => null,
+        findUnique: () => null,
+        update: () => undefined,
+      },
+      $transaction: () => null,
+      $queryRaw: () => null,
+    })
     .compile();
 
   context.dao = module.get(SnapDao);
@@ -25,6 +36,31 @@ SnapDaoUnitSuite.before(async (context) => {
 
 SnapDaoUnitSuite.after.each(() => {
   sinon.restore();
+});
+
+SnapDaoUnitSuite(
+  '#findMany should call PrismaService.snap.findMany and PrismaService.snap.count method',
+  async ({ dao, service }) => {
+    const findSpy = sinon.spy(service.snap, 'findMany');
+    const countSpy = sinon.spy(service.snap, 'count');
+    const { skip, order, page, take } = new PageOptionsDto();
+    const userId = faker.datatype.uuid();
+
+    await dao.findManyAndCount({ skip, order, page, take }, userId);
+
+    expect(findSpy.calledOnceWith(sinon.match({ skip, take, orderBy: { createdAt: order } }))).to.be.true;
+    expect(countSpy.calledOnce).to.be.true;
+  }
+);
+
+SnapDaoUnitSuite('#findMany should call PrismaService.$transaction method', async ({ dao, service }) => {
+  const spy = sinon.spy(service, '$transaction');
+  const pageOptionsDto = new PageOptionsDto();
+  const userId = faker.datatype.uuid();
+
+  await dao.findManyAndCount(pageOptionsDto, userId);
+
+  expect(spy.calledOnce).to.be.true;
 });
 
 SnapDaoUnitSuite('#findById should call PrismaService.snap.findUnique method', async ({ dao, service }) => {

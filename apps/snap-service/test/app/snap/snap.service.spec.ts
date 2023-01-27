@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { PageOptionsDto } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
@@ -11,6 +12,7 @@ import { UpdateSnapCommand } from '../../../src/app/snap/commands/impl/update-sn
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { UpdateSnapDto } from '../../../src/app/snap/dto/update-snap.dto';
 import { FindSnapByIdQuery } from '../../../src/app/snap/queries/impl/find-snap-by-id.command';
+import { FindSnapsQuery } from '../../../src/app/snap/queries/impl/find-snaps.command';
 import { SnapService } from '../../../src/app/snap/snap.service';
 
 const SnapServiceUnitSuite = suite<{ commandBus: CommandBus; queryBus: QueryBus; service: SnapService }>(
@@ -19,7 +21,7 @@ const SnapServiceUnitSuite = suite<{ commandBus: CommandBus; queryBus: QueryBus;
 
 SnapServiceUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    providers: [CommandBus, SnapService],
+    providers: [CommandBus, QueryBus, SnapService],
   })
     .overrideProvider(CommandBus)
     .useValue({ execute: () => null })
@@ -46,6 +48,16 @@ SnapServiceUnitSuite(
     expect(spy.calledOnceWithExactly(new ScheduleSnapsPruneCommand())).to.be.true;
   }
 );
+
+SnapServiceUnitSuite('#findMany should call QueryBus.execute method', async ({ queryBus, service }) => {
+  const spy = sinon.spy(queryBus, 'execute');
+  const pageOptionsDto = new PageOptionsDto();
+  const userId = faker.datatype.uuid();
+
+  await service.findMany(pageOptionsDto, userId);
+
+  expect(spy.calledOnceWithExactly(new FindSnapsQuery(pageOptionsDto, userId))).to.be.true;
+});
 
 SnapServiceUnitSuite('#findById should call QueryBus.execute method', async ({ queryBus, service }) => {
   const spy = sinon.spy(queryBus, 'execute');

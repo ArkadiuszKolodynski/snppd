@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ParamsValidationTest } from '@snppd/shared';
+import { PageOptionsDto, ParamsValidationTest } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as request from 'supertest';
@@ -16,8 +16,7 @@ import { SnapServiceMock } from './snap.service.mock';
 const SnapControllerE2eSuite = suite<{
   app: INestApplication;
   controller: SnapController;
-  endpointWithId: (id: string) => string;
-  generateEndpoint: string;
+  endpoint: string;
 }>('SnapController - e2e');
 
 SnapControllerE2eSuite.before(async (context) => {
@@ -28,11 +27,8 @@ SnapControllerE2eSuite.before(async (context) => {
     .useClass(SnapServiceMock)
     .compile();
 
-  const baseEndpoint = '/snaps';
+  context.endpoint = '/snaps';
   context.controller = module.get(SnapController);
-  context.endpointWithId = (id: string) => `${baseEndpoint}/${id}`;
-  context.generateEndpoint = `${baseEndpoint}/generate`;
-
   context.app = module.createNestApplication();
   await context.app.init();
 });
@@ -40,6 +36,8 @@ SnapControllerE2eSuite.before(async (context) => {
 SnapControllerE2eSuite.after(async ({ app }) => {
   await app.close();
 });
+
+const findManyParams = new PageOptionsDto();
 
 const generateParams: GenerateSnapDto = {
   url: faker.internet.url(),
@@ -49,6 +47,29 @@ const generateParams: GenerateSnapDto = {
 const updateParams: UpdateSnapDto = {
   tags: [faker.random.word(), faker.random.word()],
 };
+
+const findManyValidationTests: ParamsValidationTest<PageOptionsDto>[] = [
+  { params: { ...findManyParams, order: 'not an enum' }, testDescription: 'is not an enum', testedVariable: 'order' },
+  { params: { ...findManyParams, page: 'is string' }, testDescription: 'is not a number', testedVariable: 'page' },
+  { params: { ...findManyParams, page: 0 }, testDescription: 'is below the minimum', testedVariable: 'page' },
+  { params: { ...findManyParams, take: 'is string' }, testDescription: 'is not a number', testedVariable: 'take' },
+  { params: { ...findManyParams, take: 0 }, testDescription: 'is below the minimum', testedVariable: 'take' },
+  { params: { ...findManyParams, take: 51 }, testDescription: 'is above maximum', testedVariable: 'take' },
+];
+
+findManyValidationTests.forEach((validationTest) => {
+  SnapControllerE2eSuite(
+    `#findMany should return 400 Bad Request when ${validationTest.testedVariable} ${validationTest.testDescription}`,
+    async ({ app, endpoint }) => {
+      const response = await request(app.getHttpServer())
+        .get(endpoint)
+        .query(validationTest.params)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).to.exist;
+    }
+  );
+});
 
 const generateValidationTests: ParamsValidationTest<GenerateSnapDto>[] = [
   { params: { ...generateParams, url: undefined }, testDescription: 'is undefined', testedVariable: 'url' },
@@ -72,6 +93,20 @@ const generateValidationTests: ParamsValidationTest<GenerateSnapDto>[] = [
   },
 ];
 
+generateValidationTests.forEach((validationTest) => {
+  SnapControllerE2eSuite(
+    `#generate should return 400 Bad Request when ${validationTest.testedVariable} ${validationTest.testDescription}`,
+    async ({ app, endpoint }) => {
+      const response = await request(app.getHttpServer())
+        .post(`${endpoint}/generate`)
+        .send(validationTest.params)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(response.body.message).to.exist;
+    }
+  );
+});
+
 const updateValidationTests: ParamsValidationTest<UpdateSnapDto>[] = [
   { params: { tags: [''] }, testDescription: 'has an empty string', testedVariable: 'tags' },
   {
@@ -86,12 +121,13 @@ const updateValidationTests: ParamsValidationTest<UpdateSnapDto>[] = [
   },
 ];
 
-generateValidationTests.forEach((validationTest) => {
+updateValidationTests.forEach((validationTest) => {
   SnapControllerE2eSuite(
     `#generate should return 400 Bad Request when ${validationTest.testedVariable} ${validationTest.testDescription}`,
-    async ({ app, generateEndpoint }) => {
+    async ({ app, endpoint }) => {
+      const id = faker.datatype.uuid();
       const response = await request(app.getHttpServer())
-        .post(generateEndpoint)
+        .patch(`${endpoint}/${id}`)
         .send(validationTest.params)
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -100,75 +136,55 @@ generateValidationTests.forEach((validationTest) => {
   );
 });
 
-updateValidationTests.forEach((validationTest) => {
-  SnapControllerE2eSuite(
-    `#generate should return 400 Bad Request when ${validationTest.testedVariable} ${validationTest.testDescription}`,
-    async ({ app, endpointWithId: idEndpoint }) => {
-      const id = faker.datatype.uuid();
-      const response = await request(app.getHttpServer())
-        .patch(idEndpoint(id))
-        .send(validationTest.params)
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(response.body.message).to.exist;
-    }
-  );
+SnapControllerE2eSuite(`#findMany should return 200 OK when valid query is passrd`, async ({ app, endpoint }) => {
+  await request(app.getHttpServer()).get(endpoint).query(findManyParams).expect(HttpStatus.OK);
 });
 
 SnapControllerE2eSuite(
   `#findById should return 400 Bad Request when invalid UUID is passed`,
-  async ({ app, endpointWithId: idEndpoint }) => {
+  async ({ app, endpoint }) => {
     const id = 'not-a-valid-uuid';
-    await request(app.getHttpServer()).get(idEndpoint(id)).send().expect(HttpStatus.BAD_REQUEST);
+    await request(app.getHttpServer()).get(`${endpoint}/${id}`).send().expect(HttpStatus.BAD_REQUEST);
   }
 );
 
-SnapControllerE2eSuite(
-  `#findById should return 200 OK when valid UUID is passrd`,
-  async ({ app, endpointWithId: idEndpoint }) => {
-    const id = faker.datatype.uuid();
-    await request(app.getHttpServer()).get(idEndpoint(id)).send().expect(HttpStatus.OK);
-  }
-);
+SnapControllerE2eSuite(`#findById should return 200 OK when valid UUID is passrd`, async ({ app, endpoint }) => {
+  const id = faker.datatype.uuid();
+  await request(app.getHttpServer()).get(`${endpoint}/${id}`).send().expect(HttpStatus.OK);
+});
 
 SnapControllerE2eSuite(
   `#generate should return 204 No Content when valid request body is passed`,
-  async ({ app, generateEndpoint }) => {
-    await request(app.getHttpServer()).post(generateEndpoint).send(generateParams).expect(HttpStatus.NO_CONTENT);
+  async ({ app, endpoint }) => {
+    await request(app.getHttpServer()).post(`${endpoint}/generate`).send(generateParams).expect(HttpStatus.NO_CONTENT);
   }
 );
 
 SnapControllerE2eSuite(
   `#update should return 400 Bad Request when invalid UUID is passed`,
-  async ({ app, endpointWithId: idEndpoint }) => {
+  async ({ app, endpoint }) => {
     const id = 'not-a-valid-uuid';
-    await request(app.getHttpServer()).patch(idEndpoint(id)).send().expect(HttpStatus.BAD_REQUEST);
+    await request(app.getHttpServer()).patch(`${endpoint}/${id}`).send().expect(HttpStatus.BAD_REQUEST);
   }
 );
 
-SnapControllerE2eSuite(
-  `#update should return 200 OK when valid request body is passed`,
-  async ({ app, endpointWithId: idEndpoint }) => {
-    const id = faker.datatype.uuid();
-    await request(app.getHttpServer()).patch(idEndpoint(id)).send(generateParams).expect(HttpStatus.OK);
-  }
-);
+SnapControllerE2eSuite(`#update should return 200 OK when valid request body is passed`, async ({ app, endpoint }) => {
+  const id = faker.datatype.uuid();
+  await request(app.getHttpServer()).patch(`${endpoint}/${id}`).send(generateParams).expect(HttpStatus.OK);
+});
 
 SnapControllerE2eSuite(
   `#delete should return 400 Bad Request when invalid UUID is passed`,
-  async ({ app, endpointWithId: idEndpoint }) => {
+  async ({ app, endpoint }) => {
     const id = 'not-a-valid-uuid';
-    await request(app.getHttpServer()).delete(idEndpoint(id)).send().expect(HttpStatus.BAD_REQUEST);
+    await request(app.getHttpServer()).delete(`${endpoint}/${id}`).send().expect(HttpStatus.BAD_REQUEST);
   }
 );
 
-SnapControllerE2eSuite(
-  `#delete should return 200 OK when valid UUID is passrd`,
-  async ({ app, endpointWithId: idEndpoint }) => {
-    const id = faker.datatype.uuid();
-    await request(app.getHttpServer()).delete(idEndpoint(id)).send().expect(HttpStatus.OK);
-  }
-);
+SnapControllerE2eSuite(`#delete should return 200 OK when valid UUID is passrd`, async ({ app, endpoint }) => {
+  const id = faker.datatype.uuid();
+  await request(app.getHttpServer()).delete(`${endpoint}/${id}`).send().expect(HttpStatus.OK);
+});
 
 const SnapControllerUnitSuite = suite<{ controller: SnapController; service: SnapService }>('SnapController - unit');
 
@@ -187,6 +203,14 @@ SnapControllerUnitSuite.before(async (context) => {
 
 SnapControllerUnitSuite.after.each(() => {
   sinon.restore();
+});
+
+SnapControllerUnitSuite('#findMany should call SnapService.findMany method', async ({ controller, service }) => {
+  const spy = sinon.spy(service, 'findMany');
+
+  await controller.findMany(findManyParams);
+
+  expect(spy.calledOnceWithExactly(findManyParams, sinon.match.string)).to.be.true;
 });
 
 SnapControllerUnitSuite('#findById should call SnapService.findById method', async ({ controller, service }) => {

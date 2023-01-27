@@ -10,7 +10,7 @@ import { FindSnapByIdHandler } from '../../../../src/app/snap/queries/handlers/f
 const FindSnapByIdQueryHandlerUnitSuite = suite<{
   dao: SnapDao;
   handler: FindSnapByIdHandler;
-}>('indSnapByIdHandler - unit');
+}>('FindSnapByIdHandler - unit');
 
 FindSnapByIdQueryHandlerUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({

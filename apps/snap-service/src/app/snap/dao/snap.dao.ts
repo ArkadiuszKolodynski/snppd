@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, Snap } from '@prisma/client';
 import { PrismaService } from '@snppd/models';
+import { PageOptionsDto } from '@snppd/shared';
 import { subDays } from 'date-fns';
 
 @Injectable()
@@ -10,6 +11,22 @@ export class SnapDao {
 
   constructor(private readonly configService: ConfigService, private readonly prismaService: PrismaService) {
     this.PRUNE_SNAPS_DELAY_IN_DAYS = this.configService.get('PRUNE_SNAPS_DELAY_IN_DAYS') || 30;
+  }
+
+  // TODO: Enable filtering by userId when users will be added
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findManyAndCount(pageOptionsDto: PageOptionsDto, userId: string): Promise<[Snap[], number]> {
+    const { skip, order, take } = pageOptionsDto;
+
+    return this.prismaService.$transaction([
+      this.prismaService.snap.findMany({
+        skip,
+        take,
+        orderBy: { createdAt: order },
+        /* where: { userId }, */
+      }),
+      this.prismaService.snap.count(/* { where: { userId } } */),
+    ]);
   }
 
   findById(id: string): Promise<Snap> {
