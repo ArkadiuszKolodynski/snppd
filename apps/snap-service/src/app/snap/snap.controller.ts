@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import {
   Body,
   Controller,
@@ -11,6 +12,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBadRequestResponse,
   ApiNoContentResponse,
@@ -19,22 +21,25 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PageDto, PageOptionsDto } from '@snppd/shared';
-import { v4 } from 'uuid';
+import { DeleteSnapCommand } from './commands/impl/delete-snap.command';
+import { EnqueueSnapGenerationCommand } from './commands/impl/enqueue-snap-generation.command';
+import { UpdateSnapCommand } from './commands/impl/update-snap.command';
 import { GenerateSnapDto, SnapResponseDto, UpdateSnapDto } from './dto';
-import { SnapService } from './snap.service';
+import { FindSnapByIdQuery } from './queries/impl/find-snap-by-id.command';
+import { FindSnapsQuery } from './queries/impl/find-snaps.command';
 
 @ApiTags('snaps')
 @Controller('snaps')
 export class SnapController {
-  constructor(private readonly snapService: SnapService) {}
+  constructor(private readonly commandBus: CommandBus, private readonly queryBus: QueryBus) {}
 
   @Get()
   @ApiOkResponse({ type: PageDto<SnapResponseDto> })
   @ApiBadRequestResponse({ description: 'Validation errors' })
   findMany(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<SnapResponseDto>> {
     // TODO: get userId from request
-    const userId = v4();
-    return this.snapService.findMany(pageOptionsDto, userId);
+    const userId = faker.datatype.uuid();
+    return this.queryBus.execute(new FindSnapsQuery(pageOptionsDto, userId));
   }
 
   @Get(':id')
@@ -43,8 +48,8 @@ export class SnapController {
   @ApiNotFoundResponse({ description: 'Snap not found' })
   findById(@Param('id', ParseUUIDPipe) id: string): Promise<SnapResponseDto> {
     // TODO: get userId from request
-    const userId = v4();
-    return this.snapService.findById(id, userId);
+    const userId = faker.datatype.uuid();
+    return this.queryBus.execute(new FindSnapByIdQuery(id, userId));
   }
 
   @Post('generate')
@@ -53,8 +58,8 @@ export class SnapController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   generate(@Body() generateSnapDto: GenerateSnapDto): Promise<void> {
     // TODO: get userId from request
-    const userId = v4();
-    return this.snapService.generate(generateSnapDto, userId);
+    const userId = faker.datatype.uuid();
+    return this.commandBus.execute(new EnqueueSnapGenerationCommand(generateSnapDto, userId));
   }
 
   @Patch(':id')
@@ -62,8 +67,8 @@ export class SnapController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateSnapDto: UpdateSnapDto): Promise<void> {
     // TODO: get userId from request
-    const userId = v4();
-    return this.snapService.update(id, updateSnapDto, userId);
+    const userId = faker.datatype.uuid();
+    return this.commandBus.execute(new UpdateSnapCommand(id, updateSnapDto, userId));
   }
 
   @Delete(':id')
@@ -71,7 +76,7 @@ export class SnapController {
   @ApiBadRequestResponse({ description: 'Validation errors' })
   delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     // TODO: get userId from request
-    const userId = v4();
-    return this.snapService.delete(id, userId);
+    const userId = faker.datatype.uuid();
+    return this.commandBus.execute(new DeleteSnapCommand(id, userId));
   }
 }

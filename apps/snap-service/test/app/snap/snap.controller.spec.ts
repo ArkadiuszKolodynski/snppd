@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { PageOptionsDto, ParamsValidationTest } from '@snppd/shared';
 import { expect } from 'chai';
@@ -7,11 +8,14 @@ import * as sinon from 'sinon';
 import * as request from 'supertest';
 import { suite } from 'uvu';
 import { AppModule } from '../../../src/app/app.module';
+import { DeleteSnapCommand } from '../../../src/app/snap/commands/impl/delete-snap.command';
+import { EnqueueSnapGenerationCommand } from '../../../src/app/snap/commands/impl/enqueue-snap-generation.command';
+import { UpdateSnapCommand } from '../../../src/app/snap/commands/impl/update-snap.command';
 import { GenerateSnapDto } from '../../../src/app/snap/dto';
 import { UpdateSnapDto } from '../../../src/app/snap/dto/update-snap.dto';
+import { FindSnapByIdQuery } from '../../../src/app/snap/queries/impl/find-snap-by-id.command';
+import { FindSnapsQuery } from '../../../src/app/snap/queries/impl/find-snaps.command';
 import { SnapController } from '../../../src/app/snap/snap.controller';
-import { SnapService } from '../../../src/app/snap/snap.service';
-import { SnapServiceMock } from './snap.service.mock';
 
 const SnapControllerE2eSuite = suite<{
   app: INestApplication;
@@ -23,8 +27,10 @@ SnapControllerE2eSuite.before(async (context) => {
   const module = await Test.createTestingModule({
     imports: [AppModule],
   })
-    .overrideProvider(SnapService)
-    .useClass(SnapServiceMock)
+    .overrideProvider(CommandBus)
+    .useValue({ execute: () => null, register: () => null })
+    .overrideProvider(QueryBus)
+    .useValue({ execute: () => null, register: () => null })
     .compile();
 
   context.endpoint = '/snaps';
@@ -108,14 +114,14 @@ generateValidationTests.forEach((validationTest) => {
 });
 
 const updateValidationTests: ParamsValidationTest<UpdateSnapDto>[] = [
-  { params: { tags: [''] }, testDescription: 'has an empty string', testedVariable: 'tags' },
+  { params: { ...updateParams, tags: [''] }, testDescription: 'has an empty string', testedVariable: 'tags' },
   {
-    params: { tags: [faker.random.alphaNumeric(256)] },
+    params: { ...updateParams, tags: [faker.random.alphaNumeric(256)] },
     testDescription: 'has elements longer than 255 chars',
     testedVariable: 'tags',
   },
   {
-    params: { tags: ['not-unique', 'not-unique'] },
+    params: { ...updateParams, tags: ['not-unique', 'not-unique'] },
     testDescription: 'has non unique elements',
     testedVariable: 'tags',
   },
@@ -186,66 +192,89 @@ SnapControllerE2eSuite(`#delete should return 200 OK when valid UUID is passrd`,
   await request(app.getHttpServer()).delete(`${endpoint}/${id}`).send().expect(HttpStatus.OK);
 });
 
-const SnapControllerUnitSuite = suite<{ controller: SnapController; service: SnapService }>('SnapController - unit');
+const SnapControllerUnitSuite = suite<{ controller: SnapController; commandBus: CommandBus; queryBus: QueryBus }>(
+  'SnapController - unit'
+);
 
 SnapControllerUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
     controllers: [SnapController],
-    providers: [SnapService],
+    providers: [CommandBus, QueryBus],
   })
-    .overrideProvider(SnapService)
-    .useClass(SnapServiceMock)
+    .overrideProvider(CommandBus)
+    .useValue({ execute: () => null })
+    .overrideProvider(QueryBus)
+    .useValue({ execute: () => null })
     .compile();
 
   context.controller = module.get(SnapController);
-  context.service = module.get(SnapService);
+  context.commandBus = module.get(CommandBus);
+  context.queryBus = module.get(QueryBus);
 });
 
 SnapControllerUnitSuite.after.each(() => {
   sinon.restore();
 });
 
-SnapControllerUnitSuite('#findMany should call SnapService.findMany method', async ({ controller, service }) => {
-  const spy = sinon.spy(service, 'findMany');
+SnapControllerUnitSuite('#findMany should call SnapService.findMany method', async ({ controller, queryBus }) => {
+  const spy = sinon.spy(queryBus, 'execute');
+  const pageOptionsDto = new PageOptionsDto();
+  const userId = faker.datatype.uuid();
+  sinon.stub(faker.datatype, 'uuid').returns(userId);
 
-  await controller.findMany(findManyParams);
+  await controller.findMany(pageOptionsDto);
 
-  expect(spy.calledOnceWithExactly(findManyParams, sinon.match.string)).to.be.true;
+  expect(spy.calledOnceWithExactly(new FindSnapsQuery(pageOptionsDto, userId))).to.be.true;
 });
 
-SnapControllerUnitSuite('#findById should call SnapService.findById method', async ({ controller, service }) => {
-  const spy = sinon.spy(service, 'findById');
+SnapControllerUnitSuite('#findById should call SnapService.findById method', async ({ controller, queryBus }) => {
+  const spy = sinon.spy(queryBus, 'execute');
   const id = faker.datatype.uuid();
+  const userId = faker.datatype.uuid();
+  sinon.stub(faker.datatype, 'uuid').returns(userId);
 
   await controller.findById(id);
 
-  expect(spy.calledOnceWithExactly(id, sinon.match.string)).to.be.true;
+  expect(spy.calledOnceWithExactly(new FindSnapByIdQuery(id, userId))).to.be.true;
 });
 
-SnapControllerUnitSuite('#generate should call SnapService.generate method', async ({ controller, service }) => {
-  const spy = sinon.spy(service, 'generate');
+SnapControllerUnitSuite('#generate should call SnapService.generate method', async ({ controller, commandBus }) => {
+  const spy = sinon.spy(commandBus, 'execute');
+  const generateSnapDto: GenerateSnapDto = {
+    url: faker.internet.url(),
+    tags: [faker.random.word(), faker.random.word()],
+  };
+  const userId = faker.datatype.uuid();
+  sinon.stub(faker.datatype, 'uuid').returns(userId);
 
-  await controller.generate(generateParams);
+  await controller.generate(generateSnapDto);
 
-  expect(spy.calledOnceWithExactly(generateParams, sinon.match.string)).to.be.true;
+  expect(spy.calledOnceWithExactly(new EnqueueSnapGenerationCommand(generateSnapDto, userId))).to.be.true;
 });
 
-SnapControllerUnitSuite('#update should call SnapService.generate method', async ({ controller, service }) => {
-  const spy = sinon.spy(service, 'update');
-
+SnapControllerUnitSuite('#update should call SnapService.generate method', async ({ controller, commandBus }) => {
+  const spy = sinon.spy(commandBus, 'execute');
   const id = faker.datatype.uuid();
-  await controller.update(id, updateParams);
+  const updateSnapDto: UpdateSnapDto = {
+    tags: [faker.random.word(), faker.random.word()],
+  };
+  const userId = faker.datatype.uuid();
+  sinon.stub(faker.datatype, 'uuid').returns(userId);
 
-  expect(spy.calledOnceWithExactly(id, updateParams, sinon.match.string)).to.be.true;
+  await controller.update(id, updateSnapDto);
+
+  expect(spy.calledOnceWithExactly(new UpdateSnapCommand(id, updateSnapDto, userId))).to.be.true;
 });
 
-SnapControllerUnitSuite('#delete should call SnapService.delete method', async ({ controller, service }) => {
-  const spy = sinon.spy(service, 'delete');
-
+SnapControllerUnitSuite('#delete should call SnapService.delete method', async ({ controller, commandBus }) => {
+  const spy = sinon.spy(commandBus, 'execute');
   const id = faker.datatype.uuid();
+  const userId = faker.datatype.uuid();
+  sinon.stub(faker.datatype, 'uuid').returns(userId);
+
   await controller.delete(id);
 
-  expect(spy.calledOnceWithExactly(id, sinon.match.string)).to.be.true;
+  expect(spy.calledOnceWithExactly(new DeleteSnapCommand(id, userId))).to.be.true;
 });
 
 SnapControllerE2eSuite.run();
