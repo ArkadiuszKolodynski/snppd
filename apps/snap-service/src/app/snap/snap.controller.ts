@@ -1,12 +1,41 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PageDto, PageOptionsDto } from '@snppd/shared';
 import { v4 } from 'uuid';
 import { GenerateSnapDto, SnapResponseDto, UpdateSnapDto } from './dto';
 import { SnapService } from './snap.service';
 
+@ApiTags('snaps')
 @Controller('snaps')
 export class SnapController {
   constructor(private readonly snapService: SnapService) {}
+
+  @Get()
+  @ApiOkResponse({ type: PageDto<SnapResponseDto> })
+  @ApiBadRequestResponse({ description: 'Validation errors' })
+  findMany(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<SnapResponseDto>> {
+    // TODO: get userId from request
+    const userId = v4();
+    return this.snapService.findMany(pageOptionsDto, userId);
+  }
 
   @Get(':id')
   @ApiOkResponse({ type: SnapResponseDto })
