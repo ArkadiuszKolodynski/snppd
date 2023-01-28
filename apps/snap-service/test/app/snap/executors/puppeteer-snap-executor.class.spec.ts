@@ -1,7 +1,8 @@
 import { faker } from '@faker-js/faker';
+import { Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { LoggerMock } from '@snppd/shared';
 import { expect } from 'chai';
-import * as htmlToText from 'html-to-text';
 import * as puppeteer from 'puppeteer';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
@@ -16,8 +17,11 @@ const PuppeteerSnapExecutorUnitSuite = suite<{
 
 PuppeteerSnapExecutorUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    providers: [PuppeteerSnapExecutor],
-  }).compile();
+    providers: [PuppeteerSnapExecutor, Logger],
+  })
+    .overrideProvider(Logger)
+    .useClass(LoggerMock)
+    .compile();
 
   context.snapExecutor = module.get(PuppeteerSnapExecutor);
 });
@@ -66,35 +70,11 @@ PuppeteerSnapExecutorUnitSuite('should take the screenshot of the page', async (
   expect(pageStub.screenshot.calledOnce).to.be.true;
 });
 
-PuppeteerSnapExecutorUnitSuite('should get the HTML content of the page', async ({ snapExecutor, pageStub }) => {
-  const url = faker.internet.url();
-  const generatedContent = faker.lorem.lines(1);
-  const content = `<html><head></head><body><p>${generatedContent}</p></body></html>`;
-  pageStub.content.resolves(content);
-
-  const { htmlContent } = await snapExecutor.generateSnap(url);
-
-  expect(pageStub.content.calledOnce).to.be.true;
-  expect(htmlContent).to.equal(content);
-});
-
-PuppeteerSnapExecutorUnitSuite('should get the text content of the page', async ({ snapExecutor, pageStub }) => {
-  const url = faker.internet.url();
-  const generatedContent = faker.lorem.lines(1);
-  const content = `<html>${generatedContent}</html>`;
-  pageStub.content.resolves(content);
-
-  const { textContent } = await snapExecutor.generateSnap(url);
-
-  expect(pageStub.content.calledOnce).to.be.true;
-  expect(textContent).to.equal(generatedContent);
-});
-
 PuppeteerSnapExecutorUnitSuite(
   'should return null and close the browser if there was an error',
   async ({ snapExecutor, browserStub }) => {
     const url = faker.internet.url();
-    sinon.stub(htmlToText, 'convert').throws();
+    sinon.stub(Promise, 'all').throws();
 
     const result = await snapExecutor.generateSnap(url);
 

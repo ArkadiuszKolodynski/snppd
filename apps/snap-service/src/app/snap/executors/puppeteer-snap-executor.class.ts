@@ -20,12 +20,9 @@ type Article = {
 // TODO: refactor this class and download all images from article and store them via storage-service
 @Injectable()
 export class PuppeteerSnapExecutor implements SnapExecutor {
-  // TODO: provide custom logger
-  private readonly logger: Logger;
   private readonly purifier: DOMPurify.DOMPurifyI;
 
-  constructor() {
-    this.logger = new Logger(PuppeteerSnapExecutor.name);
+  constructor(private readonly logger: Logger) {
     // @ts-expect-error: inconsistent typings between used packages
     this.purifier = DOMPurify(new JSDOM('').window);
     this.purifier.setConfig({ WHOLE_DOCUMENT: true });

@@ -3,9 +3,7 @@ import { Prisma, PrismaClient } from '@prisma-snap/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  private readonly logger = new Logger(PrismaService.name);
-
-  constructor() {
+  constructor(private readonly logger: Logger) {
     super({ log: [{ emit: 'event', level: 'query' }] });
   }
 
