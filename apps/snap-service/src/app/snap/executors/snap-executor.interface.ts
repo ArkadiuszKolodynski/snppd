@@ -1,4 +1,4 @@
-import { Snap } from '@prisma/client';
+import { Snap } from '@prisma-snap/client';
 
 export type SnapGenerationResult = Omit<
   Snap,

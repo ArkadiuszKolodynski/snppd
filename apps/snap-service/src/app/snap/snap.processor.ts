@@ -9,10 +9,7 @@ import { GenerateSnapDto } from './dto';
 
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
-  // TODO: provide custom logger
-  private readonly logger = new Logger(SnapProcessor.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(private readonly commandBus: CommandBus, private readonly logger: Logger) {}
 
   @Process(GENERATE_SNAP_JOB)
   async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {

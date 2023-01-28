@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '@snppd/models';
+import { Prisma } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { PrismaService } from '../../../../src/app/prisma/prisma.service';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
 const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: PrismaService }>('SnapDao - unit');
@@ -78,14 +78,12 @@ SnapDaoUnitSuite('#create should call PrismaService.snap.create method', async (
     author: faker.name.fullName(),
     content: faker.lorem.paragraph(),
     excerpt: faker.lorem.sentences(),
-    htmlContent: faker.lorem.paragraph(),
     id: faker.datatype.uuid(),
     lang: faker.random.locale(),
     length: faker.datatype.number(),
     screenshotUrl: faker.image.imageUrl(),
     snapImageUrl: faker.image.imageUrl(),
     tags: [faker.random.word(), faker.random.word()],
-    textContent: faker.lorem.paragraph(),
     title: faker.lorem.sentence(3),
     url: faker.internet.url(),
     userId: faker.datatype.uuid(),

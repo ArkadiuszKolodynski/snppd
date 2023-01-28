@@ -23,7 +23,7 @@ jobs:
       - checkout_and_install
       - run:
           name: Generate Prisma Client
-          command: npx nx run models:generate-client
+          command: npx nx run snap-service:generate-prisma-client
       - run:
           name: Build all
           command: npm run build:all
@@ -38,7 +38,7 @@ jobs:
       - checkout_and_install
       - run:
           name: Generate Prisma Client
-          command: npx nx run models:generate-client
+          command: npx nx run snap-service:generate-prisma-client
       - run:
           name: Test all
           command: npm run test:all
@@ -48,7 +48,7 @@ jobs:
       - checkout_and_install
       - run:
           name: Generate Prisma Client
-          command: npx nx run models:generate-client
+          command: npx nx run snap-service:generate-prisma-client
       - run:
           name: Lint all
           command: npm run lint:all

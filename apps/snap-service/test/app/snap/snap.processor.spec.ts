@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
+import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { LoggerMock } from '@snppd/shared';
 import { Job } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -14,10 +16,12 @@ const SnapProcessorUnitSuite = suite<{ commandBus: CommandBus; processor: SnapPr
 
 SnapProcessorUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    providers: [CommandBus, SnapProcessor],
+    providers: [CommandBus, SnapProcessor, Logger],
   })
     .overrideProvider(CommandBus)
     .useValue({ execute: () => null })
+    .overrideProvider(Logger)
+    .useClass(LoggerMock)
     .compile();
 
   context.commandBus = module.get(CommandBus);

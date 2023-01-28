@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { WebSocketsModule } from '@snppd/websockets';
 import { SNAP_QUEUE_NAME } from '../constants';
@@ -17,6 +17,7 @@ import { SnapService } from './snap.service';
   imports: [BullModule.registerQueue({ name: SNAP_QUEUE_NAME }), CqrsModule, WebSocketsModule],
   controllers: [SnapController],
   providers: [
+    Logger,
     SnapDao,
     SnapProcessor,
     SnapSagas,

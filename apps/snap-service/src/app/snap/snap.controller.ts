@@ -20,7 +20,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PageDto, PageOptionsDto } from '@snppd/shared';
+import { ApiPaginatedOkResponse, PageDto, PageOptionsDto } from '@snppd/shared';
 import { DeleteSnapCommand } from './commands/impl/delete-snap.command';
 import { EnqueueSnapGenerationCommand } from './commands/impl/enqueue-snap-generation.command';
 import { UpdateSnapCommand } from './commands/impl/update-snap.command';
@@ -34,7 +34,7 @@ export class SnapController {
   constructor(private readonly commandBus: CommandBus, private readonly queryBus: QueryBus) {}
 
   @Get()
-  @ApiOkResponse({ type: PageDto<SnapResponseDto> })
+  @ApiPaginatedOkResponse(SnapResponseDto)
   @ApiBadRequestResponse({ description: 'Validation errors' })
   findMany(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<SnapResponseDto>> {
     // TODO: get userId from request

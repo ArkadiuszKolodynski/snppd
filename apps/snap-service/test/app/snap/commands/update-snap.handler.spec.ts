@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { Snap } from '@prisma/client';
+import { Snap } from '@prisma-snap/client';
 import { SnapUpdatedEvent } from '@snppd/events';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -22,13 +22,11 @@ UpdateSnapCommandHandlerUnitSuite.before(async (context) => {
     author: faker.name.fullName(),
     content: faker.lorem.paragraph(),
     excerpt: faker.lorem.sentences(),
-    htmlContent: faker.lorem.paragraph(),
     lang: faker.random.locale(),
     length: faker.datatype.number(),
     screenshotUrl: faker.image.imageUrl(),
     snapImageUrl: faker.image.imageUrl(),
     tags: [faker.word.noun(), faker.word.noun()],
-    textContent: faker.lorem.paragraph(),
     title: faker.lorem.sentence(),
     url: faker.internet.url(),
     userId: faker.datatype.uuid(),

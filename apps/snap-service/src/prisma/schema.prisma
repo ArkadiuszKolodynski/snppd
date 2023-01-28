@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../../../node_modules/@prisma-snap/client"
 }
 
 datasource db {
@@ -15,8 +16,6 @@ model Snap {
   title         String
   author        String?
   content       String?
-  textContent   String?
-  htmlContent   String?
   excerpt       String?
   length        Int?
   lang          String?

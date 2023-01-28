@@ -6,10 +6,11 @@ import { GenerateSnapCommand } from '../impl/generate-snap.command';
 
 @CommandHandler(GenerateSnapCommand)
 export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand> {
-  // TODO: provide custom logger
-  private readonly logger = new Logger(GenerateSnapHandler.name);
-
-  constructor(@Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor, private readonly eventBus: EventBus) {}
+  constructor(
+    @Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor,
+    private readonly eventBus: EventBus,
+    private readonly logger: Logger
+  ) {}
 
   async execute({ generateSnapDto, userId }: GenerateSnapCommand): Promise<void> {
     const { tags, url } = generateSnapDto;
