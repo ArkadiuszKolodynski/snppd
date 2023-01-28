@@ -4,7 +4,6 @@
     "auth-service": "apps/auth-service",
     "events": "libs/events",
     "frontend": "apps/frontend",
-    "models": "libs/models",
     "shared": "libs/shared",
     "snap-service": "apps/snap-service",
     "user-service": "apps/user-service",

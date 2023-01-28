@@ -2,7 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
-import { ModelsModule } from '@snppd/models';
+import { PrismaModule } from './prisma/prisma.module';
 
 import { SnapModule } from './snap/snap.module';
 
@@ -18,7 +18,7 @@ import { SnapModule } from './snap/snap.module';
       }),
       inject: [ConfigService],
     }),
-    ModelsModule,
+    PrismaModule,
     SnapModule,
   ],
   providers: [

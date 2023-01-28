@@ -2,17 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import * as registerFindSnapMiddlewareWrapper from '../../src/lib/middlewares/find-snap.middleware';
-import * as registerQueryLogMiddlewareWrapper from '../../src/lib/middlewares/query-log.middleware';
-import { PrismaService } from '../../src/lib/prisma.service';
+import { PrismaService } from '../../../src/app/prisma/prisma.service';
 
 const PrismaServiceSuite = suite<{
   module: TestingModule;
   service: PrismaService;
   connectStub: sinon.SinonStub;
   onStub: sinon.SinonStub;
-  registerFindSnapMiddlewareStub: sinon.SinonStub;
-  registerQueryLogMiddlewareStub: sinon.SinonStub;
+  useStub: sinon.SinonStub;
 }>('PrismaServiceSuite');
 
 PrismaServiceSuite.before(async (context) => {
@@ -26,8 +23,7 @@ PrismaServiceSuite.before(async (context) => {
 PrismaServiceSuite.before.each((context) => {
   context.connectStub = sinon.stub(PrismaService.prototype, '$connect');
   context.onStub = sinon.stub(PrismaService.prototype, '$on');
-  context.registerFindSnapMiddlewareStub = sinon.stub(registerFindSnapMiddlewareWrapper, 'registerFindSnapMiddleware');
-  context.registerQueryLogMiddlewareStub = sinon.stub(registerQueryLogMiddlewareWrapper, 'registerQueryLogMiddleware');
+  context.useStub = sinon.stub(PrismaService.prototype, '$use');
 });
 
 PrismaServiceSuite.after.each(() => {
@@ -40,16 +36,16 @@ PrismaServiceSuite('should connect to database', async ({ service, connectStub }
   expect(connectStub.calledOnce).to.be.true;
 });
 
-PrismaServiceSuite('should register query log middleware', async ({ service, registerQueryLogMiddlewareStub }) => {
+PrismaServiceSuite('should register query log middleware', async ({ service, onStub }) => {
   await service.onModuleInit();
 
-  expect(registerQueryLogMiddlewareStub.calledOnce).to.be.true;
+  expect(onStub.calledWith('query', sinon.match.func)).to.be.true;
 });
 
-PrismaServiceSuite('should register find snap middleware', async ({ service, registerFindSnapMiddlewareStub }) => {
+PrismaServiceSuite('should register find snap middleware', async ({ service, useStub }) => {
   await service.onModuleInit();
 
-  expect(registerFindSnapMiddlewareStub.calledOnce).to.be.true;
+  expect(useStub.calledWith(sinon.match.func)).to.be.true;
 });
 
 PrismaServiceSuite('should register shutdown hooks', async ({ module, service, onStub }) => {
@@ -57,7 +53,7 @@ PrismaServiceSuite('should register shutdown hooks', async ({ module, service, o
 
   await service.enableShutdownHooks(app);
 
-  expect(onStub.calledOnceWithExactly('beforeExit', sinon.match.func)).to.be.true;
+  expect(onStub.calledWith('beforeExit', sinon.match.func)).to.be.true;
 });
 
 PrismaServiceSuite.run();

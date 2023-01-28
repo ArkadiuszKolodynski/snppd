@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '@snppd/models';
+import { Prisma } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { PrismaService } from '../../../../src/app/prisma/prisma.service';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
 const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: PrismaService }>('SnapDao - unit');

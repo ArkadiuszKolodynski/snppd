@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Snap } from '@prisma/client';
+import { Snap } from '@prisma-snap/client';
 
 export class SnapResponseDto implements Snap {
   @ApiProperty({ format: 'uuid' })
@@ -23,12 +23,6 @@ export class SnapResponseDto implements Snap {
 
   @ApiPropertyOptional({ example: faker.lorem.paragraph() })
   readonly content: string | null;
-
-  @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  readonly textContent: string | null;
-
-  @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  readonly htmlContent: string | null;
 
   @ApiPropertyOptional({ example: faker.lorem.sentence() })
   readonly excerpt: string | null;

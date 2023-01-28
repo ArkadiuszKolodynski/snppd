@@ -2,7 +2,6 @@ import { faker } from '@faker-js/faker';
 import { Readability } from '@mozilla/readability';
 import { Injectable, Logger } from '@nestjs/common';
 import * as DOMPurify from 'dompurify';
-import { convert } from 'html-to-text';
 import { JSDOM } from 'jsdom';
 import * as puppeteer from 'puppeteer';
 import { SnapExecutor, SnapGenerationResult } from './snap-executor.interface';
@@ -45,10 +44,9 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
       ]);
       const article = this.extractArticle(htmlContent, url);
       const title = article?.title || (await page.title());
-      const textContent = await this.convertHtmlToText(htmlContent);
       // TODO: replace screenshotUrl with url from storage service
       const screenshotUrl = faker.image.imageUrl();
-      return this.getGenerationResult(article, htmlContent, textContent, title, screenshotUrl, url);
+      return this.getGenerationResult(article, title, screenshotUrl, url);
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return null;
@@ -63,21 +61,8 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
     return reader.parse();
   }
 
-  private convertHtmlToText(htmlContent: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      try {
-        const textContent = convert(htmlContent);
-        resolve(textContent);
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
   private getGenerationResult(
     article: Article,
-    htmlContent: string,
-    textContent: string,
     title: string,
     screenshotUrl: string,
     url: string
@@ -86,14 +71,12 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
       author: article?.byline?.trim(),
       content: this.purifier.sanitize(article?.content)?.trim(),
       excerpt: article?.excerpt?.trim(),
-      htmlContent: this.purifier.sanitize(htmlContent)?.trim(),
       // FIXME: after readability lib types will be fixed
       // lang: article.lang,
       lang: article && article['lang'],
       length: article?.length,
       screenshotUrl,
       snapImageUrl: this.getSnapImage(article?.content) || screenshotUrl,
-      textContent: textContent?.trim(),
       title,
       url,
     };

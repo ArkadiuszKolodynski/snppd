@@ -11,7 +11,10 @@
         "outputPath": "dist/apps/snap-service",
         "main": "apps/snap-service/src/main.ts",
         "tsConfig": "apps/snap-service/tsconfig.app.json",
-        "assets": ["apps/snap-service/src/assets"],
+        "assets": [
+          "apps/snap-service/src/assets",
+          { "glob": "schema.prisma", "input": "apps/snap-service/src/prisma", "output": "schema.prisma" }
+        ],
         "generatePackageJson": true,
         "target": "node",
         "compiler": "tsc"
@@ -49,6 +52,39 @@
         "rootDir": "apps/snap-service/test",
         "coverage": true,
         "typescript": true
+      }
+    },
+    "generate-prisma-client": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "npx prisma generate --schema ./src/prisma/schema.prisma",
+        "cwd": "apps/snap-service"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "configurations": {
+        "dev": {
+          "command": "npx prisma migrate dev --schema ./src/prisma/schema.prisma",
+          "cwd": "apps/snap-service"
+        },
+        "deploy": {
+          "command": "npx prisma migrate deploy --schema ./src/prisma/schema.prisma",
+          "cwd": "apps/snap-service"
+        },
+        "reset": {
+          "command": "npx prisma migrate reset --schema ./src/prisma/schema.prisma",
+          "cwd": "apps/snap-service"
+        },
+        "resolve": {
+          "command": "npx prisma migrate resolve --schema ./src/prisma/schema.prisma",
+          "cwd": "apps/snap-service"
+        },
+        "status": {
+          "command": "npx prisma migrate status --schema ./src/prisma/schema.prisma",
+          "cwd": "apps/snap-service"
+        }
       }
     }
   },

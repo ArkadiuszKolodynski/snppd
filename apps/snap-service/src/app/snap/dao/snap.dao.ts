@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, Snap } from '@prisma/client';
-import { PrismaService } from '@snppd/models';
+import { Prisma, Snap } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { subDays } from 'date-fns';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class SnapDao {

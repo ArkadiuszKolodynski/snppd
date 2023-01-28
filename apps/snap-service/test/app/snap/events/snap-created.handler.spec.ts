@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { Test } from '@nestjs/testing';
-import { Snap } from '@prisma/client';
+import { Snap } from '@prisma-snap/client';
 import { SnapCreatedEvent } from '@snppd/events';
 import { WebSocketService } from '@snppd/websockets';
 import { expect } from 'chai';

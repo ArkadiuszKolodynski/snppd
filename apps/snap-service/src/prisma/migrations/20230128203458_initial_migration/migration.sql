@@ -7,8 +7,6 @@ CREATE TABLE "Snap" (
     "title" TEXT NOT NULL,
     "author" TEXT,
     "content" TEXT,
-    "textContent" TEXT,
-    "htmlContent" TEXT,
     "excerpt" TEXT,
     "length" INTEGER,
     "lang" TEXT,
