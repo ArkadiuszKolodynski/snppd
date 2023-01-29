@@ -1,8 +1,7 @@
 import { faker } from '@faker-js/faker';
-import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { LoggerMock } from '@snppd/shared';
+import { Logger, LoggerMock } from '@snppd/logger';
 import { Job } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -33,7 +32,7 @@ SnapProcessorUnitSuite.after.each(() => {
 });
 
 SnapProcessorUnitSuite('should log job info on active', async ({ processor }) => {
-  const loggerStub = sinon.stub(processor['logger'], 'log');
+  const loggerStub = sinon.stub(processor['logger'], 'debug');
   const url = faker.internet.url();
   const tags = [faker.word.noun(), faker.word.noun()];
   const userId = faker.datatype.uuid();

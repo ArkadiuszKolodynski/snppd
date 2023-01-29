@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
+import { Logger, LoggerMock } from '@snppd/logger';
 import { PageOptionsDto, ParamsValidationTest } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -31,6 +32,8 @@ SnapControllerE2eSuite.before(async (context) => {
     .useValue({ execute: () => null, register: () => null })
     .overrideProvider(QueryBus)
     .useValue({ execute: () => null, register: () => null })
+    .overrideProvider(Logger)
+    .useClass(LoggerMock)
     .compile();
 
   context.endpoint = '/snaps';
