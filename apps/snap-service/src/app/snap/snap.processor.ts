@@ -15,19 +15,19 @@ export class SnapProcessor {
 
   @Process(GENERATE_SNAP_JOB)
   async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {
-    this.logger.debug('Generating snap...');
+    this.logger.info('Generating snap...');
     await this.commandBus.execute(new GenerateSnapCommand(job.data.generateSnapDto, job.data.userId));
   }
 
   @Process(PRUNE_SNAPS_JOB)
   async pruneSnaps(): Promise<void> {
-    this.logger.debug('Pruning snaps...');
+    this.logger.info('Pruning snaps...');
     await this.commandBus.execute(new PruneSnapsCommand());
   }
 
   @OnQueueActive()
   onActive(job: Job): void {
-    this.logger.debug(`Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(job.data)}...`);
+    this.logger.info(`Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(job.data)}...`);
   }
 
   @OnQueueFailed()

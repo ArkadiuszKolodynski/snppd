@@ -22,8 +22,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   registerQueryLogs(event: Prisma.QueryEvent): void {
-    this.logger.debug(`(${event.duration}ms) ${event.query}`);
-    this.logger.debug(`Params: ${event.params}`);
+    this.logger.info(`(${event.duration}ms) ${event.query}`);
+    this.logger.info(`Params: ${event.params}`);
   }
 
   registerSoftDeleteMiddleware(

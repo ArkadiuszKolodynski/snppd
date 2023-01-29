@@ -4,7 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { GlobalLogger } from '@snppd/logger';
 
 import { AppModule } from './app/app.module';
-import { swaggerConfig } from './app/config/swagger.config';
+import { swaggerConfig } from './app/configs/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });

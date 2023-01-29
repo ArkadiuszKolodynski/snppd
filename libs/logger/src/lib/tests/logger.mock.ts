@@ -1,32 +1,5 @@
 export class LoggerMock {
-  trace(): void {
-    return;
-  }
-
-  info(): void {
-    return;
-  }
-
-  fatal(): void {
-    return;
-  }
-  setContext(value: string): void {
-    return;
-  }
-
   assign(): void {
-    return;
-  }
-
-  error(): void {
-    return;
-  }
-
-  log(): void {
-    return;
-  }
-
-  warn(): void {
     return;
   }
 
@@ -34,7 +7,35 @@ export class LoggerMock {
     return;
   }
 
+  error(): void {
+    return;
+  }
+
+  fatal(): void {
+    return;
+  }
+
+  info(): void {
+    return;
+  }
+
+  log(): void {
+    return;
+  }
+
+  trace(): void {
+    return;
+  }
+
   verbose(): void {
+    return;
+  }
+
+  warn(): void {
+    return;
+  }
+
+  setContext(value: string): void {
     return;
   }
 }
