@@ -1,14 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma-snap/client';
+import { Logger, LoggerMock } from '@snppd/logger';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { PrismaService } from '../../../src/app/prisma/prisma.service';
 
 const PrismaServiceSuite = suite<{
-  logger: Logger;
   module: TestingModule;
   service: PrismaService;
   connectStub: sinon.SinonStub;
@@ -17,25 +16,14 @@ const PrismaServiceSuite = suite<{
 }>('PrismaServiceSuite');
 
 PrismaServiceSuite.before(async (context) => {
-  try {
-    context.module = await Test.createTestingModule({
-      providers: [
-        PrismaService,
-        {
-          provide: Logger,
-          useValue: {
-            debug: () => null,
-            log: () => null,
-          },
-        },
-      ],
-    }).compile();
+  context.module = await Test.createTestingModule({
+    providers: [PrismaService, Logger],
+  })
+    .overrideProvider(Logger)
+    .useClass(LoggerMock)
+    .compile();
 
-    context.logger = context.module.get(Logger);
-    context.service = context.module.get(PrismaService);
-  } catch (err) {
-    console.log(err);
-  }
+  context.service = context.module.get(PrismaService);
 });
 
 PrismaServiceSuite.before.each((context) => {
@@ -74,7 +62,7 @@ PrismaServiceSuite('should register shutdown hooks', async ({ module, service, o
   expect(onStub.calledWith('beforeExit', sinon.match.func)).to.be.true;
 });
 
-PrismaServiceSuite('#registerQueryLogs should log queries', async ({ logger, service }) => {
+PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) => {
   const event: Prisma.QueryEvent = {
     duration: faker.datatype.number(),
     params: faker.random.words(),
@@ -82,7 +70,7 @@ PrismaServiceSuite('#registerQueryLogs should log queries', async ({ logger, ser
     target: faker.random.word(),
     timestamp: faker.date.recent(),
   };
-  const spy = sinon.spy(logger, 'debug');
+  const spy = sinon.spy(service['logger'], 'debug');
 
   service.registerQueryLogs(event);
 

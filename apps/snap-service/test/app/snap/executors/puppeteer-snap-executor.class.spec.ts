@@ -1,7 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { LoggerMock } from '@snppd/shared';
+import { Logger, LoggerMock } from '@snppd/logger';
 import { expect } from 'chai';
 import * as puppeteer from 'puppeteer';
 import * as sinon from 'sinon';

@@ -1,6 +1,7 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { SnapFailedEvent, SnapGeneratedEvent } from '@snppd/events';
+import { Logger } from '@snppd/logger';
 import { SnapExecutor } from '../../executors';
 import { GenerateSnapCommand } from '../impl/generate-snap.command';
 
@@ -10,7 +11,9 @@ export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand>
     @Inject(SnapExecutor) private readonly snapExecutor: SnapExecutor,
     private readonly eventBus: EventBus,
     private readonly logger: Logger
-  ) {}
+  ) {
+    this.logger.setContext(GenerateSnapHandler.name);
+  }
 
   async execute({ generateSnapDto, userId }: GenerateSnapCommand): Promise<void> {
     const { tags, url } = generateSnapDto;

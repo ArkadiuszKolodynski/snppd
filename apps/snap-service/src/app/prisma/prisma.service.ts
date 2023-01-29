@@ -1,10 +1,12 @@
-import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma-snap/client';
+import { Logger } from '@snppd/logger';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(private readonly logger: Logger) {
     super({ log: [{ emit: 'event', level: 'query' }] });
+    logger.setContext(PrismaService.name);
   }
 
   async onModuleInit() {

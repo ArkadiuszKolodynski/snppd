@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { SnapFailedEvent, SnapGeneratedEvent } from '@snppd/events';
-import { GeneratedSnap, LoggerMock } from '@snppd/shared';
+import { Logger, LoggerMock } from '@snppd/logger';
+import { GeneratedSnap } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';

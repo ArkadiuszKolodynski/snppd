@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { Readability } from '@mozilla/readability';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Logger } from '@snppd/logger';
 import * as DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import * as puppeteer from 'puppeteer';

@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { LoggerModule } from '@snppd/logger';
 import { PrismaModule } from './prisma/prisma.module';
 
 import { SnapModule } from './snap/snap.module';
@@ -18,17 +19,10 @@ import { SnapModule } from './snap/snap.module';
       }),
       inject: [ConfigService],
     }),
+    LoggerModule,
     PrismaModule,
     SnapModule,
   ],
-  providers: [
-    {
-      provide: APP_PIPE,
-      useValue: new ValidationPipe({
-        transform: true,
-        whitelist: true,
-      }),
-    },
-  ],
+  providers: [{ provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) }],
 })
 export class AppModule {}

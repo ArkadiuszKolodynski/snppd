@@ -1,6 +1,6 @@
 import { OnQueueActive, OnQueueFailed, Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import { Logger } from '@snppd/logger';
 import { Job } from 'bull';
 import { GENERATE_SNAP_JOB, PRUNE_SNAPS_JOB, SNAP_QUEUE_NAME } from '../constants';
 import { GenerateSnapCommand } from './commands/impl/generate-snap.command';
@@ -9,7 +9,9 @@ import { GenerateSnapDto } from './dto';
 
 @Processor(SNAP_QUEUE_NAME)
 export class SnapProcessor {
-  constructor(private readonly commandBus: CommandBus, private readonly logger: Logger) {}
+  constructor(private readonly commandBus: CommandBus, private readonly logger: Logger) {
+    this.logger.setContext(SnapProcessor.name);
+  }
 
   @Process(GENERATE_SNAP_JOB)
   async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {
@@ -25,7 +27,7 @@ export class SnapProcessor {
 
   @OnQueueActive()
   onActive(job: Job): void {
-    this.logger.log(`Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(job.data)}...`);
+    this.logger.debug(`Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(job.data)}...`);
   }
 
   @OnQueueFailed()
