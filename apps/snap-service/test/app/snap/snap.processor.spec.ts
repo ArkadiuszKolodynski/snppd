@@ -15,7 +15,7 @@ const SnapProcessorUnitSuite = suite<{ commandBus: CommandBus; processor: SnapPr
 
 SnapProcessorUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    providers: [CommandBus, SnapProcessor, Logger],
+    providers: [CommandBus, Logger, SnapProcessor],
   })
     .overrideProvider(CommandBus)
     .useValue({ execute: () => null })
@@ -32,7 +32,7 @@ SnapProcessorUnitSuite.after.each(() => {
 });
 
 SnapProcessorUnitSuite('should log job info on active', async ({ processor }) => {
-  const loggerStub = sinon.stub(processor['logger'], 'debug');
+  const loggerStub = sinon.stub(processor['logger'], 'info');
   const url = faker.internet.url();
   const tags = [faker.word.noun(), faker.word.noun()];
   const userId = faker.datatype.uuid();

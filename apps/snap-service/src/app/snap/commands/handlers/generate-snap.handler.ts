@@ -19,10 +19,10 @@ export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand>
     const { tags, url } = generateSnapDto;
     const generatedSnap = await this.snapExecutor.generateSnap(url);
     if (generatedSnap) {
-      this.logger.debug('Generating snap completed!');
+      this.logger.info('Generating snap completed!');
       this.eventBus.publish(new SnapGeneratedEvent({ ...generatedSnap, tags, url, userId }));
     } else {
-      this.logger.debug('Generating snap failed!');
+      this.logger.info('Generating snap failed!');
       this.eventBus.publish(new SnapFailedEvent({ url, userId }));
     }
   }

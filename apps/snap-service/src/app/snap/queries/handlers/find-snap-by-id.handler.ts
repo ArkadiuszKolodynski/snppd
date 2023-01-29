@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { ICommandHandler, QueryHandler } from '@nestjs/cqrs';
+import { plainToInstance } from 'class-transformer';
 import { SnapDao } from '../../dao/snap.dao';
 import { SnapResponseDto } from '../../dto';
 import { FindSnapByIdQuery } from '../impl/find-snap-by-id.command';
@@ -15,6 +16,6 @@ export class FindSnapByIdHandler implements ICommandHandler<FindSnapByIdQuery> {
     if (!snap) {
       throw new NotFoundException('Snap not found');
     }
-    return snap;
+    return plainToInstance(SnapResponseDto, snap);
   }
 }

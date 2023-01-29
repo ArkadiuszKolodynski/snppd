@@ -70,7 +70,7 @@ PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) 
     target: faker.random.word(),
     timestamp: faker.date.recent(),
   };
-  const spy = sinon.spy(service['logger'], 'debug');
+  const spy = sinon.spy(service['logger'], 'info');
 
   service.registerQueryLogs(event);
 

@@ -36,9 +36,11 @@ SnapControllerE2eSuite.before(async (context) => {
     .useClass(LoggerMock)
     .compile();
 
+  console.log(process.env.NODE_ENV);
+
   context.endpoint = '/snaps';
   context.controller = module.get(SnapController);
-  context.app = module.createNestApplication();
+  context.app = module.createNestApplication({ logger: false });
   await context.app.init();
 });
 
