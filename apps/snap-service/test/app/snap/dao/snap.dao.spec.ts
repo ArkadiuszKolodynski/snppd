@@ -1,20 +1,22 @@
 import { faker } from '@faker-js/faker';
+import { ConfigService as NestConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { ConfigModule } from '../../../../src/app/config/config.module';
+import { ConfigService } from '../../../../src/app/config/config.service';
 import { PrismaService } from '../../../../src/app/prisma/prisma.service';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
-const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: PrismaService }>('SnapDao - unit');
+const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: PrismaService; configService: ConfigService }>(
+  'SnapDao - unit'
+);
 
 SnapDaoUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    imports: [ConfigModule],
-    providers: [SnapDao, PrismaService],
+    providers: [ConfigService, NestConfigService, SnapDao, PrismaService],
   })
     .overrideProvider(PrismaService)
     .useValue({
@@ -32,6 +34,7 @@ SnapDaoUnitSuite.before(async (context) => {
 
   context.dao = module.get(SnapDao);
   context.service = module.get(PrismaService);
+  context.configService = module.get(ConfigService);
 });
 
 SnapDaoUnitSuite.after.each(() => {
@@ -131,5 +134,16 @@ SnapDaoUnitSuite('#prune should call PrismaService.$queryRaw method', async ({ d
 
   expect(spy.calledOnce).to.be.true;
 });
+
+SnapDaoUnitSuite(
+  '#prune should call get pruneSnapsDelayInDays value from ConfigService',
+  async ({ dao, configService }) => {
+    const spy = sinon.spy(configService, 'pruneSnapsDelayInDays', ['get']);
+
+    await dao.prune();
+
+    expect(spy.get.calledOnce).to.be.true;
+  }
+);
 
 SnapDaoUnitSuite.run();
