@@ -62,6 +62,15 @@ PrismaServiceSuite('should register shutdown hooks', async ({ module, service, o
   expect(onStub.calledWith('beforeExit', sinon.match.func)).to.be.true;
 });
 
+PrismaServiceSuite('should close the app', async ({ module, service }) => {
+  const app = module.createNestApplication();
+  const stub = sinon.stub(app, 'close');
+
+  await service.closeApp(app);
+
+  expect(stub.calledOnce).to.be.true;
+});
+
 PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) => {
   const event: Prisma.QueryEvent = {
     duration: faker.datatype.number(),
@@ -76,5 +85,128 @@ PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) 
 
   expect(spy.calledTwice).to.be.true;
 });
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should not mutate params if model is not Snap',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'delete',
+      args: { where: {} },
+      dataPath: [],
+      runInTransaction: false,
+      model: 'notSnap' as unknown as 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith(params)).to.be.true;
+  }
+);
+
+PrismaServiceSuite('#registerSoftDeleteMiddleware should define args object', async ({ service }) => {
+  const params: Prisma.MiddlewareParams = {
+    action: 'findMany',
+    args: null,
+    dataPath: [],
+    runInTransaction: false,
+    model: 'Snap',
+  };
+  const next = sinon.fake();
+
+  service.registerSoftDeleteMiddleware(params, next);
+
+  expect(next.calledOnceWith({ ...params, args: sinon.match.object })).to.be.true;
+});
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should not mutate params if action is not findFirst, findUnique or findMany',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'delete',
+      args: { where: {} },
+      dataPath: [],
+      runInTransaction: false,
+      model: 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith(params)).to.be.true;
+  }
+);
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should add deletedAt arg as null if provided action was findFirst',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'findFirst',
+      args: { where: {} },
+      dataPath: [],
+      runInTransaction: false,
+      model: 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith({ ...params, args: { where: { deletedAt: null } } })).to.be.true;
+  }
+);
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should change action to findFirst if provided was findUnique and add deletedAt arg as null',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'findUnique',
+      args: { where: {} },
+      dataPath: [],
+      runInTransaction: false,
+      model: 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith({ ...params, action: 'findFirst', args: { where: { deletedAt: null } } })).to.be.true;
+  }
+);
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should add deletedAt arg as null if provided action was findMany and where arg exist',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'findMany',
+      args: { where: {} },
+      dataPath: [],
+      runInTransaction: false,
+      model: 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith({ ...params, args: { where: { deletedAt: null } } })).to.be.true;
+  }
+);
+
+PrismaServiceSuite(
+  '#registerSoftDeleteMiddleware should add where arg with deletedAt arg as null if provided action was findMany and where arg not exist',
+  async ({ service }) => {
+    const params: Prisma.MiddlewareParams = {
+      action: 'findMany',
+      args: {},
+      dataPath: [],
+      runInTransaction: false,
+      model: 'Snap',
+    };
+    const next = sinon.fake();
+
+    service.registerSoftDeleteMiddleware(params, next);
+
+    expect(next.calledOnceWith({ ...params, args: { where: { deletedAt: null } } })).to.be.true;
+  }
+);
 
 PrismaServiceSuite.run();

@@ -9,16 +9,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     logger.setContext(PrismaService.name);
   }
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     this.$on('query' as never, this.registerQueryLogs.bind(this));
     this.$use(this.registerSoftDeleteMiddleware.bind(this));
     await this.$connect();
   }
 
-  async enableShutdownHooks(app: INestApplication) {
-    this.$on('beforeExit', async () => {
-      await app.close();
-    });
+  async enableShutdownHooks(app: INestApplication): Promise<void> {
+    this.$on('beforeExit', this.closeApp.bind(null, app));
+  }
+
+  async closeApp(app: INestApplication) {
+    await app.close();
   }
 
   registerQueryLogs(event: Prisma.QueryEvent): void {
@@ -41,14 +43,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     return next(params);
   }
 
-  handleFindUnique(params: Prisma.MiddlewareParams): void {
+  private handleFindUnique(params: Prisma.MiddlewareParams): void {
     if (params.action === 'findFirst' || params.action === 'findUnique') {
       params.action = 'findFirst';
       params.args.where.deletedAt = null;
     }
   }
 
-  handleFindMany(params: Prisma.MiddlewareParams): void {
+  private handleFindMany(params: Prisma.MiddlewareParams): void {
     if (params.action === 'findMany') {
       if (params.args.where) {
         if (params.args.where.deletedAt === undefined) {

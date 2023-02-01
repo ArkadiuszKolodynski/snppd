@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
 import { Logger } from './logger.service';
-import { redactionKeys } from './redact/redaction-keys';
+import { redactKeys } from './redact/redact-keys';
 
 @Global()
 @Module({
@@ -9,7 +9,7 @@ import { redactionKeys } from './redact/redaction-keys';
     PinoLoggerModule.forRoot({
       pinoHttp: [
         {
-          redact: redactionKeys,
+          redact: redactKeys,
           enabled: process.env.NODE_ENV !== 'test',
           level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
           transport:

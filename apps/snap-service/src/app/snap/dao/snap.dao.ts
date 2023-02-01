@@ -1,17 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Prisma, Snap } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { subDays } from 'date-fns';
+import { ConfigService } from '../../config/config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class SnapDao {
-  private readonly PRUNE_SNAPS_DELAY_IN_DAYS: number;
-
-  constructor(private readonly configService: ConfigService, private readonly prismaService: PrismaService) {
-    this.PRUNE_SNAPS_DELAY_IN_DAYS = this.configService.get('PRUNE_SNAPS_DELAY_IN_DAYS') || 30;
-  }
+  constructor(private readonly configService: ConfigService, private readonly prismaService: PrismaService) {}
 
   // TODO: Enable filtering by userId when users will be added
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,9 +50,9 @@ export class SnapDao {
   // FIXME: https://github.com/prisma/prisma/issues/8131
   prune(): Promise<Snap[]> {
     // return this.prismaService.snap.deleteMany({
-    //   where: { deletedAt: { lte: subDays(new Date(), this.PRUNE_SNAPS_DELAY_IN_DAYS) } },
+    //   where: { deletedAt: { lte: subDays(new Date(), this.configService.pruneSnapsDelayInDays) } },
     // });
-    const delay = subDays(new Date(), this.PRUNE_SNAPS_DELAY_IN_DAYS);
+    const delay = subDays(new Date(), this.configService.pruneSnapsDelayInDays);
     return this.prismaService.$queryRaw<Snap[]>(
       Prisma.sql`DELETE FROM "public"."Snap" WHERE "deletedAt" <= TO_TIMESTAMP(${delay.getTime()} / 1000.0) RETURNING "id"`
     );
