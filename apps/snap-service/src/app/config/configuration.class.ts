@@ -4,7 +4,7 @@ import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 export class Configuration {
   @IsString()
   @Expose({ name: 'DATABASE_URL' })
-  databaseUrl: string;
+  readonly databaseUrl: string;
 
   @IsInt()
   @Min(1)
@@ -12,12 +12,12 @@ export class Configuration {
   @IsOptional()
   @Type(() => Number)
   @Expose({ name: 'PORT' })
-  port = 3000;
+  readonly port?: number = 3000;
 
   @IsString()
   @IsOptional()
   @Expose({ name: 'REDIS_HOST' })
-  redisHost = 'localhost';
+  readonly redisHost?: string = 'localhost';
 
   @IsInt()
   @Min(1)
@@ -25,12 +25,12 @@ export class Configuration {
   @IsOptional()
   @Type(() => Number)
   @Expose({ name: 'REDIS_PORT' })
-  redisPort = 6379;
+  readonly redisPort?: number = 6379;
 
   @IsString()
   @IsOptional()
   @Expose({ name: 'PRUNE_SNAPS_CRON' })
-  pruneSnapsCron = '0 2 * * *';
+  readonly pruneSnapsCron?: string = '0 2 * * *';
 
   @IsInt()
   @Min(1)
@@ -38,5 +38,5 @@ export class Configuration {
   @IsOptional()
   @Type(() => Number)
   @Expose({ name: 'PRUNE_SNAPS_DELAY_IN_DAYS' })
-  pruneSnapsDelayInDays = 30;
+  readonly pruneSnapsDelayInDays?: number = 30;
 }

@@ -1,14 +1,16 @@
 import { faker } from '@faker-js/faker';
+import { getQueueToken } from '@nestjs/bull';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
-import { Logger, LoggerMock } from '@snppd/logger';
 import { PageOptionsDto, ParamsValidationTest } from '@snppd/shared';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as request from 'supertest';
 import { suite } from 'uvu';
 import { AppModule } from '../../../src/app/app.module';
+import { SNAP_QUEUE_NAME } from '../../../src/app/constants';
+import { PrismaService } from '../../../src/app/prisma/prisma.service';
 import { DeleteSnapCommand } from '../../../src/app/snap/commands/impl/delete-snap.command';
 import { EnqueueSnapGenerationCommand } from '../../../src/app/snap/commands/impl/enqueue-snap-generation.command';
 import { UpdateSnapCommand } from '../../../src/app/snap/commands/impl/update-snap.command';
@@ -32,8 +34,10 @@ SnapControllerE2eSuite.before(async (context) => {
     .useValue({ execute: () => null, register: () => null })
     .overrideProvider(QueryBus)
     .useValue({ execute: () => null, register: () => null })
-    .overrideProvider(Logger)
-    .useClass(LoggerMock)
+    .overrideProvider(getQueueToken(SNAP_QUEUE_NAME))
+    .useValue({ add: sinon.fake(), process: sinon.fake(), on: sinon.fake() })
+    .overrideProvider(PrismaService)
+    .useValue({})
     .compile();
 
   context.endpoint = '/snaps';
@@ -59,9 +63,9 @@ const updateParams: UpdateSnapDto = {
 
 const findManyValidationTests: ParamsValidationTest<PageOptionsDto>[] = [
   { params: { ...findManyParams, order: 'not an enum' }, testDescription: 'is not an enum', testedVariable: 'order' },
-  { params: { ...findManyParams, page: 'is string' }, testDescription: 'is not a number', testedVariable: 'page' },
+  { params: { ...findManyParams, page: 'not a number' }, testDescription: 'is not a number', testedVariable: 'page' },
   { params: { ...findManyParams, page: 0 }, testDescription: 'is below the minimum', testedVariable: 'page' },
-  { params: { ...findManyParams, take: 'is string' }, testDescription: 'is not a number', testedVariable: 'take' },
+  { params: { ...findManyParams, take: 'not a number' }, testDescription: 'is not a number', testedVariable: 'take' },
   { params: { ...findManyParams, take: 0 }, testDescription: 'is below the minimum', testedVariable: 'take' },
   { params: { ...findManyParams, take: 51 }, testDescription: 'is above maximum', testedVariable: 'take' },
 ];
@@ -145,7 +149,7 @@ updateValidationTests.forEach((validationTest) => {
   );
 });
 
-SnapControllerE2eSuite(`#findMany should return 200 OK when valid query is passrd`, async ({ app, endpoint }) => {
+SnapControllerE2eSuite(`#findMany should return 200 OK when valid query is passed`, async ({ app, endpoint }) => {
   await request(app.getHttpServer()).get(endpoint).query(findManyParams).expect(HttpStatus.OK);
 });
 
@@ -157,7 +161,7 @@ SnapControllerE2eSuite(
   }
 );
 
-SnapControllerE2eSuite(`#findById should return 200 OK when valid UUID is passrd`, async ({ app, endpoint }) => {
+SnapControllerE2eSuite(`#findById should return 200 OK when valid UUID is passed`, async ({ app, endpoint }) => {
   const id = faker.datatype.uuid();
   await request(app.getHttpServer()).get(`${endpoint}/${id}`).send().expect(HttpStatus.OK);
 });
@@ -190,7 +194,7 @@ SnapControllerE2eSuite(
   }
 );
 
-SnapControllerE2eSuite(`#delete should return 200 OK when valid UUID is passrd`, async ({ app, endpoint }) => {
+SnapControllerE2eSuite(`#delete should return 200 OK when valid UUID is passed`, async ({ app, endpoint }) => {
   const id = faker.datatype.uuid();
   await request(app.getHttpServer()).delete(`${endpoint}/${id}`).send().expect(HttpStatus.OK);
 });
