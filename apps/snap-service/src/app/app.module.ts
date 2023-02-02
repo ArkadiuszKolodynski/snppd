@@ -1,28 +1,34 @@
-import { BullModule } from '@nestjs/bull';
 import { Module, ValidationPipe } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from '@snppd/logger';
 import { PrismaModule } from './prisma/prisma.module';
 
+import { BullModule } from '@nestjs/bull';
+import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/config.service';
 import { SnapModule } from './snap/snap.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
     BullModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
         redis: {
-          host: configService.get('REDIS_HOST') || 'localhost',
-          port: +configService.get('REDIS_PORT') || 6379,
+          host: configService.redisHost,
+          port: configService.redisPort,
         },
       }),
-      inject: [ConfigService],
     }),
+    ConfigModule,
     LoggerModule,
     PrismaModule,
     SnapModule,
   ],
-  providers: [{ provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) }],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({ transform: true, whitelist: true, forbidUnknownValues: true }),
+    },
+  ],
 })
 export class AppModule {}

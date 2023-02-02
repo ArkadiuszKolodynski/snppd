@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { getQueueToken } from '@nestjs/bull';
-import { ConfigService } from '@nestjs/config';
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { Queue } from 'bull';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
+import { ConfigService } from '../../../../src/app/config/config.service';
 import { PRUNE_SNAPS_JOB, SNAP_QUEUE_NAME } from '../../../../src/app/constants';
 import { ScheduleSnapsPruneHandler } from '../../../../src/app/snap/commands/handlers/schedule-snaps-prune.handler';
 
@@ -34,7 +34,7 @@ ScheduleSnapsPruneCommandHandlerUnitSuite.before(async (context) => {
     .overrideProvider(EventBus)
     .useValue({ publish: () => null })
     .overrideProvider(ConfigService)
-    .useValue({ get: () => cron })
+    .useValue({ pruneSnapsCron: cron })
     .compile();
 
   context.cron = cron;
