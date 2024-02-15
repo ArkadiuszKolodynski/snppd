@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Snap } from '@prisma-snap/client';
+import { ISnap } from '@snppd/shared';
 
-export class SnapResponseDto implements Snap {
+export class SnapResponseDto implements ISnap {
   @ApiProperty({ format: 'uuid' })
   readonly id: string;
 
@@ -18,33 +18,24 @@ export class SnapResponseDto implements Snap {
   @ApiProperty({ example: faker.lorem.sentence(4) })
   readonly title: string;
 
-  @ApiPropertyOptional({ example: faker.name.fullName() })
-  readonly author: string | null;
-
-  @ApiPropertyOptional({ example: faker.lorem.paragraph() })
-  readonly content: string | null;
-
-  @ApiPropertyOptional({ example: faker.lorem.sentence() })
-  readonly excerpt: string | null;
-
-  @ApiPropertyOptional({ example: faker.datatype.number() })
-  readonly length: number | null;
-
-  @ApiPropertyOptional({ example: faker.random.locale() })
-  readonly lang: string | null;
-
-  @ApiPropertyOptional({ example: faker.image.imageUrl() })
+  @ApiProperty({ example: faker.image.url() })
   readonly screenshotUrl: string;
 
-  @ApiPropertyOptional({ example: faker.image.imageUrl() })
-  readonly snapImageUrl: string;
+  @ApiProperty({ example: faker.image.url() })
+  readonly headlineImageUrl: string;
 
-  @ApiProperty()
-  readonly createdAt: Date;
+  @ApiPropertyOptional({ example: faker.person.fullName() })
+  readonly author?: string | null;
 
-  @ApiPropertyOptional()
-  readonly updatedAt: Date | null;
+  @ApiPropertyOptional({ example: faker.lorem.paragraph() })
+  readonly content?: string | null;
 
-  @ApiPropertyOptional()
-  readonly deletedAt: Date | null;
+  @ApiPropertyOptional({ example: faker.lorem.sentence() })
+  readonly excerpt?: string | null;
+
+  @ApiPropertyOptional({ example: faker.number.int() })
+  readonly length?: number | null;
+
+  @ApiPropertyOptional({ example: faker.location.countryCode() })
+  readonly lang?: string | null;
 }

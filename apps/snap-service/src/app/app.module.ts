@@ -1,9 +1,9 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from '@snppd/logger';
-import { PrismaModule } from './prisma/prisma.module';
+import { DatabaseModule } from './database/database.module';
 
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { SnapModule } from './snap/snap.module';
@@ -13,15 +13,15 @@ import { SnapModule } from './snap/snap.module';
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        redis: {
+        connection: {
           host: configService.redisHost,
           port: configService.redisPort,
         },
       }),
     }),
     ConfigModule,
+    DatabaseModule,
     LoggerModule,
-    PrismaModule,
     SnapModule,
   ],
   providers: [

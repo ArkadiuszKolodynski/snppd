@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker';
 import { Readability } from '@mozilla/readability';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@snppd/logger';
 import * as DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import * as puppeteer from 'puppeteer';
+import { DOM_PURIFY } from '../../constants';
 import { SnapExecutor, SnapGenerationResult } from './snap-executor.interface';
 
 type Article = {
@@ -21,15 +22,12 @@ type Article = {
 // TODO: refactor this class and download all images from article and store them via storage-service
 @Injectable()
 export class PuppeteerSnapExecutor implements SnapExecutor {
-  private readonly purifier: DOMPurify.DOMPurifyI;
+  constructor(
+    @Inject(DOM_PURIFY) private readonly purifier: DOMPurify.DOMPurifyI,
+    private readonly logger: Logger,
+  ) {}
 
-  constructor(private readonly logger: Logger) {
-    // @ts-expect-error: inconsistent typings between used packages
-    this.purifier = DOMPurify(new JSDOM('').window);
-    this.purifier.setConfig({ WHOLE_DOCUMENT: true });
-  }
-
-  async generateSnap(url: string): Promise<SnapGenerationResult> {
+  async generateSnap(id: string, url: string): Promise<SnapGenerationResult | null> {
     let browser: puppeteer.Browser;
     try {
       browser = await puppeteer.launch();
@@ -44,7 +42,7 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
       const title = article?.title || (await page.title());
       // TODO: replace screenshotUrl with url from storage service
       const screenshotUrl = faker.image.imageUrl();
-      return this.getGenerationResult(article, title, screenshotUrl, url);
+      return this.getGenerationResult(id, article, title, screenshotUrl, url);
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return null;
@@ -55,17 +53,18 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
 
   private extractArticle(htmlContent: string, url: string): Article {
     const { document } = new JSDOM(htmlContent, { url }).window;
-    const reader = new Readability(document);
-    return reader.parse();
+    return new Readability(document).parse();
   }
 
   private getGenerationResult(
+    id: string,
     article: Article,
     title: string,
     screenshotUrl: string,
-    url: string
+    url: string,
   ): SnapGenerationResult {
     return {
+      id,
       author: article?.byline?.trim(),
       content: this.purifier.sanitize(article?.content)?.trim(),
       excerpt: article?.excerpt?.trim(),
@@ -74,7 +73,7 @@ export class PuppeteerSnapExecutor implements SnapExecutor {
       lang: article && article['lang'],
       length: article?.length,
       screenshotUrl,
-      snapImageUrl: this.getSnapImage(article?.content) || screenshotUrl,
+      headlineImageUrl: this.getSnapImage(article?.content) || screenshotUrl,
       title,
       url,
     };

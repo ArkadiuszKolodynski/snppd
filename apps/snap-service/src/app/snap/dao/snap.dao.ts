@@ -3,11 +3,11 @@ import { Prisma, Snap } from '@prisma-snap/client';
 import { PageOptionsDto } from '@snppd/shared';
 import { subDays } from 'date-fns';
 import { ConfigService } from '../../config/config.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { DatabaseService } from '../../database/database.service';
 
 @Injectable()
 export class SnapDao {
-  constructor(private readonly configService: ConfigService, private readonly prismaService: PrismaService) {}
+  constructor(private readonly configService: ConfigService, private readonly prismaService: DatabaseService) {}
 
   // TODO: Enable filtering by userId when users will be added
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

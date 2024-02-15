@@ -3,10 +3,10 @@ import { Prisma, PrismaClient } from '@prisma-snap/client';
 import { Logger } from '@snppd/logger';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class DatabaseService extends PrismaClient implements OnModuleInit {
   constructor(private readonly logger: Logger) {
     super({ log: [{ emit: 'event', level: 'query' }] });
-    logger.setContext(PrismaService.name);
+    logger.setContext(DatabaseService.name);
   }
 
   async onModuleInit(): Promise<void> {
@@ -16,7 +16,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async enableShutdownHooks(app: INestApplication): Promise<void> {
-    this.$on('beforeExit', this.closeApp.bind(null, app));
+    this.$on('beforeExit' as never, this.closeApp.bind(null, app));
   }
 
   async closeApp(app: INestApplication) {
@@ -30,9 +30,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   registerSoftDeleteMiddleware(
     params: Prisma.MiddlewareParams,
-    next: (params: Prisma.MiddlewareParams) => Promise<unknown>
+    next: (params: Prisma.MiddlewareParams) => Promise<unknown>,
   ): Promise<unknown> {
-    if (params.model !== 'Snap') {
+    if (params.model !== Prisma.ModelName.Snap) {
       return next(params);
     }
 

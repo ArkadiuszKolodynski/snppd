@@ -7,18 +7,18 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
 import { ConfigService } from '../../../../src/app/config/config.service';
-import { PrismaService } from '../../../../src/app/prisma/prisma.service';
+import { DatabaseService } from '../../../../src/app/database/database.service';
 import { SnapDao } from '../../../../src/app/snap/dao/snap.dao';
 
-const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: PrismaService; configService: ConfigService }>(
+const SnapDaoUnitSuite = suite<{ dao: SnapDao; service: DatabaseService; configService: ConfigService }>(
   'SnapDao - unit'
 );
 
 SnapDaoUnitSuite.before(async (context) => {
   const module = await Test.createTestingModule({
-    providers: [ConfigService, NestConfigService, SnapDao, PrismaService],
+    providers: [ConfigService, NestConfigService, SnapDao, DatabaseService],
   })
-    .overrideProvider(PrismaService)
+    .overrideProvider(DatabaseService)
     .useValue({
       snap: {
         create: () => null,
@@ -33,7 +33,7 @@ SnapDaoUnitSuite.before(async (context) => {
     .compile();
 
   context.dao = module.get(SnapDao);
-  context.service = module.get(PrismaService);
+  context.service = module.get(DatabaseService);
   context.configService = module.get(ConfigService);
 });
 

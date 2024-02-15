@@ -1,17 +1,11 @@
 {
-  "npmScope": "snppd",
   "affected": {
     "defaultBase": "master"
   },
-  "cli": {
-    "defaultCollection": "@nrwl/nest"
-  },
   "tasksRunnerOptions": {
     "default": {
-      "runner": "@nrwl/workspace/tasks-runners/default",
-      "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
-      }
+      "runner": "@nx/workspace/tasks-runners/default",
+      "options": {}
     }
   },
   "targetDependencies": {
@@ -31,21 +25,36 @@
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
-      "!{projectRoot}/.eslintrc.json"
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/src/test-setup.[jt]s"
     ]
   },
   "targetDefaults": {
     "build": {
-      "inputs": ["production", "^production"]
-    },
-    "e2e": {
-      "inputs": ["default", "^production"]
+      "inputs": ["production", "^production"],
+      "cache": true
     },
     "test": {
-      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "cache": true
     },
-    "lint": {
-      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+    "@nx/jest:jest": {
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "cache": true,
+      "options": {
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    },
+    "@nx/eslint:lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+      "cache": true
     }
-  }
+  },
+  "nxCloudAccessToken": "YjgyMWVkMDktZWJmMy00OTk3LTg0NjgtNTk3MmM5N2FhMTVhfHJlYWQtd3JpdGU="
 }

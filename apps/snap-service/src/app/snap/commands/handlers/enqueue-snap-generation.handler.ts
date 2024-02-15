@@ -1,4 +1,4 @@
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { SnapEnqueuedEvent } from '@snppd/events';
 import { Queue } from 'bull';

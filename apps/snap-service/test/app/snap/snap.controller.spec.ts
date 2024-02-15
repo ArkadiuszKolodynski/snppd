@@ -10,7 +10,7 @@ import * as request from 'supertest';
 import { suite } from 'uvu';
 import { AppModule } from '../../../src/app/app.module';
 import { SNAP_QUEUE_NAME } from '../../../src/app/constants';
-import { PrismaService } from '../../../src/app/prisma/prisma.service';
+import { DatabaseService } from '../../../src/app/database/database.service';
 import { DeleteSnapCommand } from '../../../src/app/snap/commands/impl/delete-snap.command';
 import { EnqueueSnapGenerationCommand } from '../../../src/app/snap/commands/impl/enqueue-snap-generation.command';
 import { UpdateSnapCommand } from '../../../src/app/snap/commands/impl/update-snap.command';
@@ -36,7 +36,7 @@ SnapControllerE2eSuite.before(async (context) => {
     .useValue({ execute: () => null, register: () => null })
     .overrideProvider(getQueueToken(SNAP_QUEUE_NAME))
     .useValue({ add: sinon.fake(), process: sinon.fake(), on: sinon.fake() })
-    .overrideProvider(PrismaService)
+    .overrideProvider(DatabaseService)
     .useValue({})
     .compile();
 

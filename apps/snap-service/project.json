@@ -5,7 +5,7 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nrwl/webpack:webpack",
+      "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/snap-service",
@@ -13,11 +13,16 @@
         "tsConfig": "apps/snap-service/tsconfig.app.json",
         "assets": [
           "apps/snap-service/src/assets",
-          { "glob": "schema.prisma", "input": "apps/snap-service/src/prisma", "output": "schema.prisma" }
+          {
+            "glob": "schema.prisma",
+            "input": "apps/snap-service/src/prisma",
+            "output": "schema.prisma"
+          }
         ],
         "generatePackageJson": true,
         "target": "node",
-        "compiler": "tsc"
+        "compiler": "tsc",
+        "webpackConfig": "apps/snap-service/webpack.config.js"
       },
       "configurations": {
         "production": {
@@ -34,17 +39,14 @@
       }
     },
     "serve": {
-      "executor": "@nrwl/node:node",
+      "executor": "@nx/js:node",
       "options": {
         "buildTarget": "snap-service:build"
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/snap-service/**/*.ts"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "nx-uvu:uvu",

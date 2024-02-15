@@ -5,56 +5,56 @@ import { Logger, LoggerMock } from '@snppd/logger';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { suite } from 'uvu';
-import { PrismaService } from '../../../src/app/prisma/prisma.service';
+import { DatabaseService } from '../../../src/app/database/database.service';
 
-const PrismaServiceSuite = suite<{
+const DatabaseServiceSuite = suite<{
   module: TestingModule;
-  service: PrismaService;
+  service: DatabaseService;
   connectStub: sinon.SinonStub;
   onStub: sinon.SinonStub;
   useStub: sinon.SinonStub;
-}>('PrismaServiceSuite');
+}>('DatabaseServiceSuite');
 
-PrismaServiceSuite.before(async (context) => {
+DatabaseServiceSuite.before(async (context) => {
   context.module = await Test.createTestingModule({
-    providers: [PrismaService, Logger],
+    providers: [DatabaseService, Logger],
   })
     .overrideProvider(Logger)
     .useClass(LoggerMock)
     .compile();
 
-  context.service = context.module.get(PrismaService);
+  context.service = context.module.get(DatabaseService);
 });
 
-PrismaServiceSuite.before.each((context) => {
-  context.connectStub = sinon.stub(PrismaService.prototype, '$connect');
-  context.onStub = sinon.stub(PrismaService.prototype, '$on');
-  context.useStub = sinon.stub(PrismaService.prototype, '$use');
+DatabaseServiceSuite.before.each((context) => {
+  context.connectStub = sinon.stub(DatabaseService.prototype, '$connect');
+  context.onStub = sinon.stub(DatabaseService.prototype, '$on');
+  context.useStub = sinon.stub(DatabaseService.prototype, '$use');
 });
 
-PrismaServiceSuite.after.each(() => {
+DatabaseServiceSuite.after.each(() => {
   sinon.restore();
 });
 
-PrismaServiceSuite('should connect to database', async ({ service, connectStub }) => {
+DatabaseServiceSuite('should connect to database', async ({ service, connectStub }) => {
   await service.onModuleInit();
 
   expect(connectStub.calledOnce).to.be.true;
 });
 
-PrismaServiceSuite('should register query log middleware', async ({ service, onStub }) => {
+DatabaseServiceSuite('should register query log middleware', async ({ service, onStub }) => {
   await service.onModuleInit();
 
   expect(onStub.calledWith('query', sinon.match.func)).to.be.true;
 });
 
-PrismaServiceSuite('should register find snap middleware', async ({ service, useStub }) => {
+DatabaseServiceSuite('should register find snap middleware', async ({ service, useStub }) => {
   await service.onModuleInit();
 
   expect(useStub.calledWith(sinon.match.func)).to.be.true;
 });
 
-PrismaServiceSuite('should register shutdown hooks', async ({ module, service, onStub }) => {
+DatabaseServiceSuite('should register shutdown hooks', async ({ module, service, onStub }) => {
   const app = module.createNestApplication();
 
   await service.enableShutdownHooks(app);
@@ -62,7 +62,7 @@ PrismaServiceSuite('should register shutdown hooks', async ({ module, service, o
   expect(onStub.calledWith('beforeExit', sinon.match.func)).to.be.true;
 });
 
-PrismaServiceSuite('should close the app', async ({ module, service }) => {
+DatabaseServiceSuite('should close the app', async ({ module, service }) => {
   const app = module.createNestApplication();
   const stub = sinon.stub(app, 'close');
 
@@ -71,7 +71,7 @@ PrismaServiceSuite('should close the app', async ({ module, service }) => {
   expect(stub.calledOnce).to.be.true;
 });
 
-PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) => {
+DatabaseServiceSuite('#registerQueryLogs should log queries', async ({ service }) => {
   const event: Prisma.QueryEvent = {
     duration: faker.datatype.number(),
     params: faker.random.words(),
@@ -86,7 +86,7 @@ PrismaServiceSuite('#registerQueryLogs should log queries', async ({ service }) 
   expect(spy.calledTwice).to.be.true;
 });
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should not mutate params if model is not Snap',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -104,7 +104,7 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite('#registerSoftDeleteMiddleware should define args object', async ({ service }) => {
+DatabaseServiceSuite('#registerSoftDeleteMiddleware should define args object', async ({ service }) => {
   const params: Prisma.MiddlewareParams = {
     action: 'findMany',
     args: null,
@@ -119,7 +119,7 @@ PrismaServiceSuite('#registerSoftDeleteMiddleware should define args object', as
   expect(next.calledOnceWith({ ...params, args: sinon.match.object })).to.be.true;
 });
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should not mutate params if action is not findFirst, findUnique or findMany',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -137,7 +137,7 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should add deletedAt arg as null if provided action was findFirst',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -155,7 +155,7 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should change action to findFirst if provided was findUnique and add deletedAt arg as null',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -173,7 +173,7 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should add deletedAt arg as null if provided action was findMany and where arg exist',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -191,7 +191,7 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite(
+DatabaseServiceSuite(
   '#registerSoftDeleteMiddleware should add where arg with deletedAt arg as null if provided action was findMany and where arg not exist',
   async ({ service }) => {
     const params: Prisma.MiddlewareParams = {
@@ -209,4 +209,4 @@ PrismaServiceSuite(
   }
 );
 
-PrismaServiceSuite.run();
+DatabaseServiceSuite.run();

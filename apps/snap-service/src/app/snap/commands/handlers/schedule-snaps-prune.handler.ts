@@ -1,4 +1,4 @@
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Queue } from 'bull';
 import { ConfigService } from '../../../config/config.service';

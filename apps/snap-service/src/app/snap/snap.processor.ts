@@ -1,36 +1,39 @@
-import { OnQueueActive, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { CommandBus } from '@nestjs/cqrs';
 import { Logger } from '@snppd/logger';
-import { Job } from 'bull';
+import { Job } from 'bullmq';
+
 import { GENERATE_SNAP_JOB, PRUNE_SNAPS_JOB, SNAP_QUEUE_NAME } from '../constants';
 import { GenerateSnapCommand } from './commands/impl/generate-snap.command';
 import { PruneSnapsCommand } from './commands/impl/prune-snaps.command';
-import { GenerateSnapDto } from './dto';
 
 @Processor(SNAP_QUEUE_NAME)
-export class SnapProcessor {
+export class SnapProcessor extends WorkerHost {
   constructor(private readonly commandBus: CommandBus, private readonly logger: Logger) {
+    super();
     this.logger.setContext(SnapProcessor.name);
   }
 
-  @Process(GENERATE_SNAP_JOB)
-  async generateSnap(job: Job<{ generateSnapDto: GenerateSnapDto; userId: string }>): Promise<void> {
-    this.logger.info('Generating snap...');
-    await this.commandBus.execute(new GenerateSnapCommand(job.data.generateSnapDto, job.data.userId));
+  // TODO: split to separate queues
+  async process(job: Job): Promise<void> {
+    switch (job.name) {
+      case GENERATE_SNAP_JOB: {
+        this.logger.info('Generating snap...');
+        return await this.commandBus.execute(new GenerateSnapCommand(job.data.generateSnapDto, job.data.userId));
+      }
+      case PRUNE_SNAPS_JOB: {
+        this.logger.info('Pruning snaps...');
+        return await this.commandBus.execute(new PruneSnapsCommand());
+      }
+    }
   }
 
-  @Process(PRUNE_SNAPS_JOB)
-  async pruneSnaps(): Promise<void> {
-    this.logger.info('Pruning snaps...');
-    await this.commandBus.execute(new PruneSnapsCommand());
-  }
-
-  @OnQueueActive()
+  @OnWorkerEvent('active')
   onActive(job: Job): void {
     this.logger.info(`Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(job.data)}...`);
   }
 
-  @OnQueueFailed()
+  @OnWorkerEvent('failed')
   onFailed(job: Job, error: Error): void {
     this.logger.error(
       `Processing job ${job.id} of type ${job.name} with data ${JSON.stringify(

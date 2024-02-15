@@ -1,7 +1,7 @@
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 
-export function getValidateFn<T extends object>(
+export function validateFn<T extends object>(
   type: ClassConstructor<T>
 ): (config: Record<string, unknown>) => T | undefined {
   return (config: Record<string, unknown>) => {

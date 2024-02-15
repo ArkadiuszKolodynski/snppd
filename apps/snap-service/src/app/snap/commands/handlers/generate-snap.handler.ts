@@ -16,8 +16,8 @@ export class GenerateSnapHandler implements ICommandHandler<GenerateSnapCommand>
   }
 
   async execute({ generateSnapDto, userId }: GenerateSnapCommand): Promise<void> {
-    const { tags, url } = generateSnapDto;
-    const generatedSnap = await this.snapExecutor.generateSnap(url);
+    const { id, tags, url } = generateSnapDto;
+    const generatedSnap = await this.snapExecutor.generateSnap(id, url);
     if (generatedSnap) {
       this.logger.info('Generating snap completed!');
       this.eventBus.publish(new SnapGeneratedEvent({ ...generatedSnap, tags, url, userId }));

@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ArrayUnique, IsArray, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateSnapDto {
-  @ApiProperty({ description: 'Snap tags', isArray: true, example: [faker.random.word(), faker.random.word()] })
+  @ApiProperty({ description: 'Snap tags', isArray: true, example: [faker.word.sample(), faker.word.sample()] })
   @IsArray()
   @ArrayUnique()
   @IsString({ each: true })

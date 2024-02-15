@@ -1,6 +1,6 @@
 import { IEvent } from '@nestjs/cqrs';
-import { Snap } from '@prisma-snap/client';
+import { ISnap } from '@snppd/shared';
 
 export class SnapUpdatedEvent implements IEvent {
-  constructor(public readonly updatedSnap: Snap) {}
+  constructor(public readonly updatedSnap: ISnap) {}
 }

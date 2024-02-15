@@ -5,7 +5,7 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nrwl/webpack:webpack",
+      "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/user-service",
@@ -14,7 +14,8 @@
         "assets": ["apps/user-service/src/assets"],
         "generatePackageJson": true,
         "target": "node",
-        "compiler": "tsc"
+        "compiler": "tsc",
+        "webpackConfig": "apps/user-service/webpack.config.js"
       },
       "configurations": {
         "production": {
@@ -31,17 +32,14 @@
       }
     },
     "serve": {
-      "executor": "@nrwl/node:node",
+      "executor": "@nx/js:node",
       "options": {
         "buildTarget": "user-service:build"
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/user-service/**/*.ts"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "nx-uvu:uvu",

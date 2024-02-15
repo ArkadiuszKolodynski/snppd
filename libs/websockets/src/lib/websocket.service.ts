@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 @WebSocketGateway()
 export class WebSocketService {
   @WebSocketServer()
-  readonly server: Server;
+  private readonly server: Server;
 
   emit(messageName: string, data: unknown): boolean {
     return this.server.emit(messageName, data);
